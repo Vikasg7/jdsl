@@ -1,7 +1,6 @@
 (ns jdsl.core
   (:refer-clojure :exclude [do map peek apply]))
 
-
 ;; Success a ts :: (list a ts)
 ;; Error        :: nil | string
 ;; Parser a ts  :: ts -> Success a ts | Error
@@ -35,13 +34,6 @@
     (if (or (nil? result) (error? result))
       (-> result)
     (throw (parse-error result ts))))))
-
-(declare many+)
-
-(defn run-all
-  "Runs the parse with the given input until the input is consumed."
-  [p ts]
-  (run (many+ p) ts))
 
 (defmacro ignore-parse-error 
   "macro to catch-ignore only parse errors and throw rest of them."
@@ -287,7 +279,7 @@
 
 (defn choice
   "The parser choice ps is an optimized implementation of p1 <|> p2 <|> ... <|> pn , where p1 … pn are the parsers in the sequence ps."
-  [ps]
+  [& ps]
   (if (empty? ps)
     zero
   (fn [ts]
@@ -404,7 +396,7 @@
       (recur ts (conj as a)))))))))
 
 (defn sep-end-by+
-  "TThe parser sepEndBy1 p sep parses one or more occurrences of p separated and  
+  "The parser sepEndBy1 p sep parses one or more occurrences of p separated and  
    optionally ended by sep.  It returns a list of the results returned by p."
   [pa ps]
   (fn [ts]
@@ -450,11 +442,11 @@
   (fn [ts]
     (loop [ts ts
            as []]
-    (let [[e ts] (attempt pe ts)]
-    (if-not (nil? e)
-      (list (not-empty as) ts)
-    (let [[a ts] (run pa ts)]
-    (recur ts (conj as a))))))))
+      (let [[e ts] (attempt pe ts)]
+      (if-not (nil? e)
+        (list (not-empty as) ts)
+      (let [[a ts] (run pa ts)]
+      (recur ts (conj as a))))))))
 
 (defn many-till+
   "manyTill1 p end applies parser p one or more times until parser end succeeds.  
@@ -464,11 +456,11 @@
     (let [[a ts] (run pa ts)]
     (loop [ts ts
            as [a]]
-    (let [[e ts] (attempt pe ts)]
-    (if-not (nil? e)
-      (list as ts)
-    (let [[a ts] (run pa ts)]
-    (recur ts (conj as a)))))))))
+      (let [[e ts] (attempt pe ts)]
+      (if-not (nil? e)
+        (list as ts)
+      (let [[a ts] (run pa ts)]
+      (recur ts (conj as a)))))))))
 
 (defn skip-many-till*
   "skipManyTill p end applies parser p zero or more times until parser end succeeds.  
@@ -476,11 +468,11 @@
   [pa pe]
   (fn [ts]
     (loop [ts ts]
-    (let [[e ts] (attempt pe ts)]
-    (if-not (nil? e)
-      (list nil ts)
-    (let [[_ ts] (run pa ts)]
-    (recur ts)))))))
+      (let [[e ts] (attempt pe ts)]
+      (if-not (nil? e)
+        (list nil ts)
+      (let [[_ ts] (run pa ts)]
+      (recur ts)))))))
 
 (defn skip-many-till+
   "skipManyTill1 p end applies parser p one or more times until parser end succeeds.  
@@ -489,17 +481,11 @@
   (fn [ts]
     (let [[_ ts] (run pa ts)]
     (loop [ts ts]
-    (let [[e ts] (attempt pe ts)]
-    (if-not (nil? e)
-      (list nil ts)
-    (let [[_ ts] (run pa ts)]
-    (recur ts))))))))
-
-(def bind  >>=)
-(def alt   <|>)
-(def label <?>)
-(def map   <$>)
-(def apply <*>)
+      (let [[e ts] (attempt pe ts)]
+      (if-not (nil? e)
+        (list nil ts)
+      (let [[_ ts] (run pa ts)]
+      (recur ts))))))))
 
 (defn- expand 
   "Expands (a <- parser) or (parser) bindings in the do macro"
@@ -516,3 +502,14 @@
   `(fn [~'ts]
     (let [~@bindings]
     (list ~'_ ~'ts)))))
+
+(defn run-all
+  "Runs the parse with the given input until the input is consumed."
+  [p ts]
+  (run (many+ p) ts))
+
+(def bind  >>=)
+(def alt   <|>)
+(def label <?>)
+(def map   <$>)
+(def apply <*>)
