@@ -8,7 +8,7 @@
    and [clojure.lang.ISeq](https://github.com/clojure/clojure/blob/master/src/jvm/clojure/lang/ISeq.java)  
    interfaces."
   [tokens]
-  [tokens #_position= 0])
+  [tokens #_position= -1])
 
 (def tokens   first)
 (def position second)
