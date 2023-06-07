@@ -1,5 +1,6 @@
 (ns jdsl.combinator
-  (:require [jdsl.basic :as jb]))
+  (:refer-clojure :exclude [apply map peek])
+  (:require [jdsl.basic :as jb :only [run return]]))
 
 (defn <$>
  "Applies a function `f` to the result of parsing with parser `p`.
@@ -124,7 +125,7 @@
       (jb/run p ts)
     (catch clojure.lang.ExceptionInfo e
       (let [data (ex-data e)]
-      (throw (jb/parse-error (str msg \n (:msg data))
+      (throw (jb/parse-error (str msg \newline " " (:msg data))
                              (:ts data))))))))
 
 (defn <|>
@@ -180,7 +181,7 @@
     (jb/return a ts))))
 
 (defn between
- "The `between` function takes in three parsers `pa`, `pb`, and `pc` and applies them in sequence.  
+ "The `between` function takes in three parsers `pb`, `pa`, and `pc` and applies them in sequence.  
   It returns the result of `pb`. The purpose of this function is to parse a sequence of tokens that  
   are enclosed between two specific tokens.  
 
@@ -202,7 +203,7 @@
   (jb/run parser \"(456)\") ; Returns: (\"456\", nil)
   ```
   "
-  [pa pb pc]
+  [pb pa pc]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)
           [b ts] (jb/run pb ts)
@@ -230,7 +231,7 @@
 
 (defn choice
   "The parser choice ps is an optimized implementation of p1 <|> p2 <|> ... <|> pn , where p1 … pn are the parsers in the sequence ps."
-  [& ps]
+  [ps]
   (if (empty? ps)
     zero
   (fn [ts]
@@ -438,8 +439,14 @@
       (let [[_ ts] (jb/run pa ts)]
       (recur ts))))))))
 
-(def bind  >>=)
-(def alt   <|>)
-(def label <?>)
-(def map   <$>)
-(def apply <*>)
+(defmacro copy-meta
+  "Copy meta-data from `from-var` to `to-var`"
+  ^:private
+  [sym value]
+  `(alter-meta! ~sym merge (meta (var ~value))))
+
+(-> (def bind  >>=) (copy-meta >>=))
+(-> (def alt   <|>) (copy-meta <|>))
+(-> (def label <?>) (copy-meta <?>))
+(-> (def map   <$>) (copy-meta <$>))
+(-> (def apply <*>) (copy-meta <*>))

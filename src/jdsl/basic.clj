@@ -1,6 +1,6 @@
 (ns jdsl.basic
   (:refer-clojure :exclude [do map peek apply])
-  (:require [jdsl.combinator :as jc]))
+  (:require [jdsl.token-stream :as ts :only [peek]]))
 
 ;; Success a ts :: (list a ts)
 ;; Error        :: nil | string
@@ -17,15 +17,14 @@
 
 (def EOS? nil?)
 
-;; TODO: redo print-error based on the new token-stream.clj
-;; Check if the input is str else don't calcuate the line-idx or col-idx
 (defn print-error
   "Prints the message based on original input `ts`, remaining input `ts` and error `msg`."
   [e]
-  (let [ts      (:ts (ex-data e))
-        msg     (ex-message e)
-        err-idx (- (count ts) (count ts))]
-  (println msg " while parsing: " (nth ts 0) " at index: " err-idx)))
+  (let [ex-data (ex-data e)
+        ex-msg  (ex-message e)]
+  (println ex-msg \newline 
+           (:msg ex-data) \newline
+           "   Found:" (ts/peek (:ts ex-data)))))
 
 (defn parse-error
   "Helper function to generate parsing error"
@@ -40,8 +39,8 @@
   ([p ts]
     (let [result (p ts)]
     (if (or (nil? result) (error? result))
-      (-> result)
-    (throw (parse-error result ts))))))
+      (throw (parse-error result ts))
+    (-> result)))))
 
 (defmacro ignore-parse-error 
   "macro to catch-ignore only parse errors and throw rest of them."
@@ -76,8 +75,3 @@
   `(fn [~'ts]
     (let [~@bindings]
     (list ~'_ ~'ts)))))
-
-(defn run-all
-  "Runs the parse with the given input until the input is consumed."
-  [p ts]
-  (run (jc/many+ p) ts))
