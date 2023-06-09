@@ -1,4 +1,4 @@
-(ns jdsl.flip
+(ns jdsl.flipped
   "The version of jdsl.combinator functions with parameters in reverse orders.  
    This might come in handy while extending parses with -> and ->> (thread macros)."
   (:refer-clojure :exclude [peek map apply]))

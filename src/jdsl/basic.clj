@@ -1,10 +1,10 @@
 (ns jdsl.basic
   (:refer-clojure :exclude [do map peek apply])
-  (:require [jdsl.token-stream :as ts :only [peek]]))
+  (:require [jdsl.char-stream :as cs]))
 
-;; Success a ts :: (list a ts)
+;; Return a ts :: (vec a ts)
 ;; Error        :: nil | string
-;; Parser a ts  :: ts -> Success a ts | Error
+;; Parser a ts  :: ts -> Return a ts | Error
 
 (def error? string?)
 
@@ -23,8 +23,8 @@
   (let [ex-data (ex-data e)
         ex-msg  (ex-message e)]
   (println ex-msg \newline 
-           (:msg ex-data) \newline
-           "   Found:" (ts/peek (:ts ex-data)))))
+           (or (:msg ex-data) "Expected: ") \newline
+           "   Found:" (cs/peek (:ts ex-data)))))
 
 (defn parse-error
   "Helper function to generate parsing error"

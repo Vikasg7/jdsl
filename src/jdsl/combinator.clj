@@ -1,6 +1,7 @@
 (ns jdsl.combinator
   (:refer-clojure :exclude [apply map peek])
-  (:require [jdsl.basic :as jb :only [run return]]))
+  (:require [jdsl.basic :as jb]
+            [clojure.string :as str]))
 
 (defn <$>
  "Applies a function `f` to the result of parsing with parser `p`.
@@ -41,9 +42,9 @@
   (fn [ts]
     (jb/return a ts)))
 
-(defn zero
+(def zero
   "parser that always returns ParserError = nil"
-  [_] nil)
+  (fn [_] nil))
 
 (defn fail
   "parser that always returns ParserError = str"
@@ -124,8 +125,9 @@
     (try
       (jb/run p ts)
     (catch clojure.lang.ExceptionInfo e
-      (let [data (ex-data e)]
-      (throw (jb/parse-error (str msg \newline " " (:msg data))
+      (let [data (ex-data e)
+            msgs  (if (:msg data) [msg (:msg data)] [msg])]
+      (throw (jb/parse-error (str/join "\n " msgs)
                              (:ts data))))))))
 
 (defn <|>
@@ -273,7 +275,7 @@
         (jb/return nil ts)
       (recur ts))))))
 
-(defn skip-many+*
+(defn skip-many+
   "The parser `(skip-many+ p)` is an optimized implementation of `(fn [_]) <$> many+ p`"
   [p]
   (fn [ts]
