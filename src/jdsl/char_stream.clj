@@ -1,14 +1,16 @@
 (ns jdsl.char-stream
   (:refer-clojure :exclude [next peek read]))
 
+#_{:clj-kondo/ignore [:not-empty?]}
 (defn create
   "Creates new char-stream for parsers to work with."
   [string]
+  {:pre [(not (empty? string))]}
   [(vec string) #_position= -1])
 
 (defn next
   "Returns the next char in the char-stream if available else nil.  
-   It also returns updated charstream. It doesn't mutate incoming  
+   It also returns updated char-stream. It doesn't mutate incoming  
    char-stream state coz Mutation kills BackTracking."
   [[string position]]
   (when-let [next-char (nth string (inc position) nil)]
@@ -97,7 +99,8 @@
         [\newline (skip cs 2)]
       (if (or (= r \return) (= r \newline))
         [\newline (skip cs 1)]
-      [r (skip cs 1)]))))
+      (when r
+        [r (skip cs 1)])))))
   ([cs c]
     (if (or (= c \return) (= c \newline))
     (when-let [cs (skip-newline cs)]

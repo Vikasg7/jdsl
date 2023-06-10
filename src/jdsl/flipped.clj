@@ -1,9 +1,12 @@
 (ns jdsl.flipped
-  "The version of jdsl.combinator functions with parameters in reverse orders.  
-   This might come in handy while extending parses with -> and ->> (thread macros)."
+  "This namespace creates and holds version of jdsl.combinator functions with parameters  
+   in reverse orders. This might come in handy while extending parses with -> and ->>  
+   (thread macros). So when you require the jdsl.flipped namespace, you should be able  
+   to access functions in jsdl.combinators with their arguments flipped."
   (:refer-clojure :exclude [peek map apply]))
 
 (defn- flip-args
+  "Flips arguments for f with arity 2 or 3"
   [f]
   (let [args (first (:arglists (meta f)))]
   (case (count args)

@@ -5,6 +5,8 @@
             [jdsl.char-parser  :as jp]
             [jdsl.char-stream  :as cs]))
 
+(set! *warn-on-reflection* true)
+
 (def ba (jf/label "Expected: ba" (jf/<> (jp/char \a) (jp/char \b))))
 (def ab
   (jf/label "Expected: ab"

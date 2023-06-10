@@ -104,8 +104,7 @@
   (skip-char \newline))
 
 (def space
-  "Parses a whitespace character like  
-   \\newline, \\space, \\return, \\tab, \\formfeed"
+  "Parses a whitespace character like \\newline, \\space, \\return, \\tab, \\formfeed"
   (satisfy (set "\r\n\t \f")))
 
 (def spaces*
@@ -117,8 +116,7 @@
   (jc/many+ space))
 
 (def skip-space
-  "Skips a whitespace character like  
-   \\newline, \\space, \\return, \\tab, \\formfeed"
+  "Skips a whitespace character like \\newline, \\space, \\return, \\tab, \\formfeed"
   (skip-satisfy (set "\r\n\t \f")))
 
 (def skip-spaces*
