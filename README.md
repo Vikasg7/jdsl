@@ -1,5 +1,5 @@
 # JDSL
-A Parser Combinator in Clojure  
+A Parser Combinator Library in Clojure  
 
 ### Todo
 - [ ] Write clj-fmt rultes for jdsl.basic/do macro

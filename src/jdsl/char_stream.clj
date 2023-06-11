@@ -5,8 +5,7 @@
 (defn create
   "Creates new char-stream for parsers to work with."
   [string]
-  {:pre [(not (empty? string))]}
-  [(vec string) #_position= -1])
+  [(vec (seq string)) #_position= -1])
 
 (defn next
   "Returns the next char in the char-stream if available else nil.  

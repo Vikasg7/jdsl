@@ -15,50 +15,50 @@
   [c]
   (fn [cs]
     (when-let [[_ cs] (cs/read cs c)]
-      (jb/return nil cs))))
+      (jb/ok nil cs))))
 
 (def any-char
-  "Parses any char, taking care of newline string"
+  "Parses any char, taking care of newline variants."
   (fn [cs]
     (when-let [[char cs] (cs/read cs)]
-      (jb/return char cs))))
+      (jb/ok char cs))))
 
 (def skip-any-char
-  "Skips any char, taking care of newline string"
+  "Skips any char, taking care of newline variants."
   (fn [cs]
     (when-let [[_ cs] (cs/read cs)]
-      (jb/return nil cs))))
+      (jb/ok nil cs))))
 
 (defn satisfy
-  "`satisfy f` parses any one char or newline for which  
+  "`satisfy f` parses any char or newline for which  
    the predicate function `f` returns true."
   [pred]
   (fn [cs]
     (when-let [[char ts] (cs/read cs)]
     (when (pred char)
-      (jb/return char ts)))))
+      (jb/ok char ts)))))
 
 (defn skip-satisfy
-  "`skip-satisfy f` skips any one char or newline for which  
+  "`skip-satisfy f` skips any char or newline for which  
    the predicate function `f` returns true."
   [pred]
   (fn [cs]
     (when-let [[char ts] (cs/read cs)]
     (when (pred char)
-      (jb/return nil ts)))))
+      (jb/ok nil ts)))))
 
 (defn any-of
-  "Parses any char contained in the specified `string`"
+  "Parses any char contained in the specified `string`."
   [string]
   (satisfy (set string)))
 
 (defn skip-any-of
-  "Skips any char contained in the specified `string`"
+  "Skips any char contained in the specified `string`."
   [string]
   (skip-satisfy (set string)))
 
 (defn none-of
-  "Parses any char NOT contained in the specified `string`"
+  "Parses any char NOT contained in the specified `string`."
   [string]
   (satisfy (comp not (set string))))
 
@@ -69,27 +69,26 @@
 
 (def lower
   "Parses a lower case character."
-  (satisfy (fn lower? [c] (<= (- (int c) (int \a)) (- (int \z) (int \a))))))
+  (satisfy (fn lower? [c] (<= (int \a) (int c) (int \z)))))
 
 (def upper
   "Parses a upper case character."
-  (satisfy (fn upper? [c] (<= (- (int c) (int \A)) (- (int \Z) (int \A))))))
+  (satisfy (fn upper? [c] (<= (int \A) (int c) (int \Z)))))
 
 (def digit
   "Parses a digit (0-9)."
-  (satisfy (fn digit? [c] (<= (- (int c) (int \0)) (- (int \9) (int \0))))))
+  (satisfy (fn digit? [c] (<= (int \0) (int c) (int \9)))))
 
 (def hex
   "Parses a hex character."
-  (satisfy (fn hex? [c] 
-             (or (<= (- (int c) (int \0)) 
-                     (- (int \9) (int \0)))
-                 (<= (- (bit-or (int c) (int \space))
-                        (int \a))
-                     (- (int \f) (int \a)))))))
+  (satisfy (fn hex? [c]
+             (or (<= (int \0) (int c) (int \9))
+                 (<= (int \a) (int c) (int \f))
+                 (<= (int \A) (int c) (int \F))))))
+
 (def octal
   "Parses a octal character."
-  (satisfy (fn octal? [c] (<= (- (int c) (int \0)) (- (int \9) (int \0))))))
+  (satisfy (fn octal? [c] (<= (int \0) (int c) (int \7)))))
 
 (def tab
   "Parses a tab character."
@@ -131,7 +130,7 @@
   "`eof` parser succeeds only at the end of the input."
   (fn [cs]
     (when-not (cs/peek cs)
-      (jb/return nil cs))))
+      (jb/ok nil cs))))
 
 (defn string
   "Parses the `string`"
@@ -140,7 +139,7 @@
     (loop [str string
            cs  cs]
       (if (empty? str)
-        (jb/return string cs)
+        (jb/ok string cs)
       (when-let [[_ cs] (cs/read cs (first str))]
         (recur (next str) cs))))))
 
@@ -151,6 +150,6 @@
     (loop [str string
            cs  cs]
       (if (empty? str)
-        (jb/return nil cs)
+        (jb/ok nil cs)
       (when-let [[_ cs] (cs/read cs (first str))]
         (recur (next str) cs))))))

@@ -2,16 +2,17 @@
   (:refer-clojure :exclude [do map peek apply])
   (:require [jdsl.char-stream :as cs]))
 
-;; Return a ts :: (vec a ts)
-;; Error        :: nil | string
-;; Parser a ts  :: ts -> Return a ts | Error
+;; Ok a ts     :: (vec a ts)
+;; Error       :: nil | string
+;; Result a ts :: Ok a ts | Error 
+;; Parser a ts :: ts -> Result a ts
 
 (def error? string?)
 
 (defmacro error
   [& error] `(str ~@error))
 
-(defmacro return
+(defmacro ok
   ([error]  `~error)
   ([val ts] `(vector ~val ~ts)))
 

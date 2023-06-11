@@ -19,37 +19,37 @@
   [f p]
   (fn [ts]
     (let [[a ts] (jb/run p ts)]
-    (jb/return (f a) ts))))
+    (jb/ok (f a) ts))))
 
 (defn <$
   "(<$) :: a -> p b -> p a"
   [a p]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)]
-    (jb/return a ts))))
+    (jb/ok a ts))))
 
 (defn $>
   "($>) :: p a ->  b -> p b"
   [p b]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)]
-    (jb/return b ts))))
+    (jb/ok b ts))))
 
 (defn return
   "Wraps a value `a` into parser `p`
    return :: a -> p a"
   [a]
   (fn [ts]
-    (jb/return a ts)))
+    (jb/ok a ts)))
 
 (def zero
   "parser that always returns ParserError = nil"
-  (fn [_] nil))
+  (fn [_] (jb/error nil)))
 
 (defn fail
   "parser that always returns ParserError = str"
   [msg]
-  (fn [_] msg))
+  (fn [_] (jb/error msg)))
 
 (defn lift
   "lift :: (a -> b) -> (a -> p b)"
@@ -63,7 +63,7 @@
   (fn [ts]
     (let [[a ts] (jb/run p ts)
           [b ts] (jb/run (f a) ts)]
-    (jb/return b ts))))
+    (jb/ok b ts))))
 
 (defn =<<
   "(=<<) :: (a -> p b) -> p a -> p b"
@@ -71,7 +71,7 @@
   (fn [ts]
     (let [[a ts] (jb/run p ts)
           [b ts] (jb/run (f a) ts)]
-    (jb/return b ts))))
+    (jb/ok b ts))))
 
 (defn >>
   "(>>) :: p a -> p b -> p b"
@@ -79,7 +79,7 @@
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)
           [b ts] (jb/run pb ts)]
-    (jb/return b ts))))
+    (jb/ok b ts))))
 
 (defn <<
   "(<<) :: p a -> p b -> p a"
@@ -87,7 +87,7 @@
   (fn [ts]
     (let [[a ts] (jb/run pa ts)
           [_ ts] (jb/run pb ts)]
-    (jb/return a ts))))
+    (jb/ok a ts))))
 
 (defn <*>
   "(<*>) :: Monoid p => p (a -> b) -> p a -> p b"
@@ -95,7 +95,7 @@
   (fn [ts]
     (let [[f ts] (jb/run pf ts)
           [a ts] (jb/run pa ts)]
-    (jb/return (f a) ts))))
+    (jb/ok (f a) ts))))
 
 (defn <>
   "(<>) :: Monoid p => p a -> p b -> p (a b)
@@ -106,7 +106,7 @@
     (fn [ts]
       (let [[a ts] (jb/run pa ts)
             [b ts] (jb/run pb ts)]
-      (jb/return (f a b) ts)))))
+      (jb/ok (f a b) ts)))))
 
 (defn <?>
  "Returns a parser that takes an input `ts` and runs the parser `p` on it.
@@ -145,7 +145,7 @@
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
     (if-not (nil? a)
-      (jb/return a ts)
+      (jb/ok a ts)
     (jb/run pb ts)))))
 
 (defn optional
@@ -167,7 +167,7 @@
   [p]
   (fn [ts]
     (let [[_ ts] (jb/attempt p ts)]
-    (jb/return nil ts))))
+    (jb/ok nil ts))))
 
 (defn peek
   "Returns a parser that matches the given parser `p`, but does not consume any input.  
@@ -180,7 +180,7 @@
   [p]
   (fn [ts]
     (let [[a _] (jb/attempt p ts)]
-    (jb/return a ts))))
+    (jb/ok a ts))))
 
 (defn between
  "The `between` function takes in three parsers `pb`, `pa`, and `pc` and applies them in sequence.  
@@ -210,7 +210,7 @@
     (let [[_ ts] (jb/run pa ts)
           [b ts] (jb/run pb ts)
           [_ ts] (jb/run pc ts)]
-    (jb/return b ts))))
+    (jb/ok b ts))))
 
 (defn many*
   "many applies the parser `p` zero or more times"
@@ -220,7 +220,7 @@
            as []]
       (let [[a ts] (jb/attempt p ts)]
       (if (nil? a)
-        (jb/return as ts)
+        (jb/ok (not-empty as) ts)
       (recur ts (conj as a)))))))
 
 (defn many+
@@ -229,7 +229,7 @@
   (fn [ts]
     (let [[a  ts] (jb/run p ts)
           [bs ts] (jb/run (many* p) ts)]
-    (jb/return (cons a bs) ts))))
+    (jb/ok (cons a bs) ts))))
 
 (defn choice
   "The parser choice ps is an optimized implementation of p1 <|> p2 <|> ... <|> pn , where p1 … pn are the parsers in the sequence ps."
@@ -241,11 +241,11 @@
            a  nil
            ts ts]
       (if (empty? ps)
-        (or a (jb/return a ts)) ;; ParseError = nil if a is nil after running all the `ps`
+        (or a (jb/ok a ts)) ;; ParseError = nil if a is nil after running all the `ps`
       (let [[p & ps] ps
             [a ts]   (jb/attempt p ts)]
       (if-not (nil? a)
-        (jb/return a ts)
+        (jb/ok a ts)
       (recur ps a ts))))))))
 
 (defn followed-by
@@ -254,7 +254,7 @@
   [p]
   (fn [ts]
     (when (jb/run p ts)
-      (jb/return nil ts))))
+      (jb/ok nil ts))))
 
 (defn not-followed-by
   "The parser notFollowedBy p succeeds if the parser p fails to parse at the current position.  
@@ -263,7 +263,7 @@
   (fn [ts]
     (let [[a _] (jb/attempt p ts)]
     (when (nil? a) 
-      (jb/return nil ts)))))
+      (jb/ok nil ts)))))
 
 (defn skip-many*
   "The parser `(skip-many* p)` is an optimized implementation of  `(fn [_]) <$> many* p`"
@@ -272,7 +272,7 @@
     (loop [ts ts]
       (let [[a ts] (jb/attempt p ts)]
       (if (nil? a)
-        (jb/return nil ts)
+        (jb/ok nil ts)
       (recur ts))))))
 
 (defn skip-many+
@@ -281,7 +281,7 @@
   (fn [ts]
     (let [[_ ts] (jb/run p ts)
           [_ ts] (jb/run (skip-many* p) ts)]
-    (jb/return nil ts))))
+    (jb/ok nil ts))))
 
 (defn sep-by*
   "sepBy p sep parses zero or more occurrences of p, separated by sep."
@@ -289,12 +289,12 @@
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
     (if (nil? a)
-      (jb/return nil ts)
+      (jb/ok nil ts)
     (loop [ts ts
            as [a]]
       (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
       (if (nil? a)
-        (jb/return as ts)
+        (jb/ok as ts)
       (recur ts (conj as a)))))))))
 
 (defn sep-by+
@@ -306,7 +306,7 @@
            as [a]]
       (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
       (if (nil? a)
-        (jb/return as ts)
+        (jb/ok as ts)
       (recur ts (conj as a))))))))
 
 (defn skip-sep-by*
@@ -315,11 +315,11 @@
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
     (if (nil? a)
-      (jb/return nil ts)
+      (jb/ok nil ts)
     (loop [ts ts]
       (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
       (if (nil? a)
-        (jb/return nil ts)
+        (jb/ok nil ts)
       (recur ts))))))))
 
 (defn skip-sep-by+
@@ -327,11 +327,11 @@
   [pa ps]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
-      (loop [ts ts]
-        (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
-        (if (nil? a)
-          (jb/return nil ts)
-        (recur ts)))))))
+    (loop [ts ts]
+      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
+      (if (nil? a)
+        (jb/ok nil ts)
+      (recur ts)))))))
 
 (defn sep-end-by*
   "The parser sepEndBy p sep parses zero or more occurrences of p separated and  
@@ -340,13 +340,13 @@
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
     (if (nil? a)
-      (jb/return nil ts)
+      (jb/ok nil ts)
     (loop [ts ts
            as [a]]
       (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
       (if (nil? a)
         (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/return as ts))
+        (jb/ok as ts))
       (recur ts (conj as a)))))))))
 
 (defn sep-end-by+
@@ -360,7 +360,7 @@
       (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
       (if (nil? a)
         (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/return as ts))
+        (jb/ok as ts))
       (recur ts (conj as a))))))))
 
 (defn skip-sep-end-by*
@@ -369,12 +369,12 @@
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
     (if (nil? a)
-      (jb/return nil ts)
+      (jb/ok nil ts)
     (loop [ts ts]
       (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
       (if (nil? a)
         (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/return nil ts))
+        (jb/ok nil ts))
       (recur ts))))))))
 
 (defn skip-sep-end-by+
@@ -386,7 +386,7 @@
       (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
       (if (nil? a)
         (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/return nil ts))
+        (jb/ok nil ts))
       (recur ts)))))))
 
 (defn many-till*
@@ -398,7 +398,7 @@
            as []]
       (let [[e ts] (jb/attempt pe ts)]
       (if-not (nil? e)
-        (jb/return (not-empty as) ts)
+        (jb/ok (not-empty as) ts)
       (let [[a ts] (jb/run pa ts)]
       (recur ts (conj as a))))))))
 
@@ -412,7 +412,7 @@
            as [a]]
       (let [[e ts] (jb/attempt pe ts)]
       (if-not (nil? e)
-        (jb/return as ts)
+        (jb/ok as ts)
       (let [[a ts] (jb/run pa ts)]
       (recur ts (conj as a)))))))))
 
@@ -424,7 +424,7 @@
     (loop [ts ts]
       (let [[e ts] (jb/attempt pe ts)]
       (if-not (nil? e)
-        (jb/return nil ts)
+        (jb/ok nil ts)
       (let [[_ ts] (jb/run pa ts)]
       (recur ts)))))))
 
@@ -437,7 +437,7 @@
     (loop [ts ts]
       (let [[e ts] (jb/attempt pe ts)]
       (if-not (nil? e)
-        (jb/return nil ts)
+        (jb/ok nil ts)
       (let [[_ ts] (jb/run pa ts)]
       (recur ts))))))))
 
