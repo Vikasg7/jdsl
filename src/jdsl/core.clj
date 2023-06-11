@@ -21,6 +21,6 @@
 (defn -main
   [& args]
   (try
-    (println (jb/run (jp/skip-string "abcx") (cs/create "abcF")))
+    (println (jb/run ab (cs/create "abcF")))
   (catch clojure.lang.ExceptionInfo e
     (jb/print-error e))))

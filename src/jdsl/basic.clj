@@ -7,14 +7,14 @@
 ;; Result a ts :: Ok a ts | Error 
 ;; Parser a ts :: ts -> Result a ts
 
-(def error? string?)
+(def error? (some-fn nil? string?))
 
 (defmacro error
-  [& error] `(str ~@error))
+  ([error] `~error)
+  ([expect & error] `(str ~expect ~@error)))
 
 (defmacro ok
-  ([error]  `~error)
-  ([val ts] `(vector ~val ~ts)))
+  [val ts] `(vector ~val ~ts))
 
 (def EOS? nil?)
 
@@ -33,18 +33,38 @@
   (ex-info "ParseError" {:ts ts :msg msg}))
 
 (defn run
-  "Runs the parser `p` on input `ts`, throws parsing error"
+  "Runs the parser `p` on input `ts`, throws parsing error.  
+   Parse Error contains following fields which can be accessed  
+   using `ex-message` and `ex-data` function.  
+
+   ```clojure
+   (try
+     (run parser (cs/create \"abc\"))
+   (catch clojure.lang.ExceptionInfo e
+     ;; always equal to \"ParseError\"
+     (println (ex-message e))
+     ;; all messages/labels attached to the parsers
+     ;; using <$> or by simply returing jb/error from
+     ;; the parsers.
+     (println (:msg (ex-data e)))
+     ;; Current state of the token stream (ie. char stream)
+     ;; when the error happened.
+     (println (:ts (ex-message e)))))
+   ```  
+   You can use all of above information to create your own  
+   custom error print function."
   ([p]
     (fn [ts]
       (run p ts)))
   ([p ts]
     (let [result (p ts)]
-    (if (or (nil? result) (error? result))
+    (if (error? result)
       (throw (parse-error result ts))
     (-> result)))))
 
 (defmacro ignore-parse-error 
   "macro to catch-ignore only parse errors and throw rest of them."
+  ^:private
   [& body]
   `(try 
      ~@body
@@ -59,7 +79,7 @@
   ([p ts]
     (if-let [result (ignore-parse-error (run p ts))]
       (-> result)
-    (list nil ts))))
+    (vector nil ts))))
 
 (defn- expand 
   "Expands (a <- parser) or (parser) bindings in the do macro"
@@ -75,4 +95,4 @@
   (let [bindings (mapcat expand exprs)]
   `(fn [~'ts]
     (let [~@bindings]
-    (list ~'_ ~'ts)))))
+    (vector ~'_ ~'ts)))))
