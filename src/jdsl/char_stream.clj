@@ -1,11 +1,11 @@
 (ns jdsl.char-stream
   (:refer-clojure :exclude [next peek read]))
 
-#_{:clj-kondo/ignore [:not-empty?]}
 (defn create
   "Creates new char-stream for parsers to work with."
   [string]
-  [(vec (seq string)) #_position= -1])
+  [(when-not (empty? string) (vec string)) 
+   #_position= -1])
 
 (defn next
   "Returns the next char in the char-stream if available else nil.  
@@ -37,7 +37,7 @@
     (catch NullPointerException _))))
 
 (defn peek-nth
-  "Return the next char at (current postion + offset) in the current stream."
+  "Return the next char at (current postion + offset) in the char-stream."
   [[string position] offset]
   (nth string (+ position offset) nil))
 
@@ -47,14 +47,14 @@
   (= c (nth string (inc position) nil)))
 
 (defn match-seq
-  "Returns true if the next char in the stream matches the specified `coll`."
+  "Returns true if the next char in the stream matches the specified sequence `s`."
   [cs s]
   (= s (peek cs (count s))))
 
 (defn match-str
   "Returns true if the next char in the stream matches the specified `string`."
   [cs string]
-  (= (vec string) (peek cs (count string))))
+  (= (seq string) (peek cs (count string))))
 
 (defn skip
   "[[string position :as cs]]  
@@ -98,8 +98,7 @@
         [\newline (skip cs 2)]
       (if (or (= r \return) (= r \newline))
         [\newline (skip cs 1)]
-      (when r
-        [r (skip cs 1)])))))
+      [r (skip cs 1)]))))
   ([cs c]
     (if (or (= c \return) (= c \newline))
     (when-let [cs (skip-newline cs)]

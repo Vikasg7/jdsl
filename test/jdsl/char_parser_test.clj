@@ -142,7 +142,7 @@
     (is (= (jb/run jp/skip-spaces+ (cs/create "\r\n\t \fa"))  [nil [(vec "\r\n\t \fa") 4]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run jp/skip-spaces+ (cs/create "abcde")))))
   (testing "eof"
-    (is (= (jb/run jp/eof (cs/create ""))  [nil [(vec "") -1]]))
+    (is (= (jb/run jp/eof (cs/create ""))  [nil [nil -1]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run jp/eof (cs/create "A")))))
   (testing "string"
     (is (= (jb/run (jp/string "abcd\t") (cs/create "abcd\tf")) ["abcd\t" [(vec "abcd\tf") 4]]))

@@ -2,9 +2,7 @@
 A Parser Combinator Library in Clojure  
 
 ### Todo
-- [ ] Write clj-fmt rultes for jdsl.basic/do macro
-- [ ] Check for possible defn as macro
-- [ ] Define parser with 0 parameters as (def my-parser (fn [ts] ...))
+- [ ] Write doc-string for the ns for each file.
 
 ### Sources
 - [FParsec Documentation](http://www.quanttec.com/fparsec/reference/primitives.html)  

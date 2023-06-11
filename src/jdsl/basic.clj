@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [do map peek apply])
   (:require [jdsl.char-stream :as cs]))
 
-;; Ok a ts     :: (vec a ts)
+;; Ok a ts     :: [a ts]
 ;; Error       :: nil | string
 ;; Result a ts :: Ok a ts | Error 
 ;; Parser a ts :: ts -> Result a ts
