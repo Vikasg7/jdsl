@@ -11,9 +11,10 @@
   "Returns the next char in the char-stream if available else nil.  
    It also returns updated char-stream. It doesn't mutate incoming  
    char-stream state coz Mutation kills BackTracking."
-  [[string position]]
+  [cs]
+  (let [[string position] cs]
   (when-let [next-char (nth string (inc position) nil)]
-    (-> [next-char [string (inc position)]])))
+    (-> [next-char [string (inc position)]]))))
 
 (def state
   "A parser that returns the current char-stream state."
@@ -21,30 +22,34 @@
     (-> [cs cs])))
 
 (defn peek
-  "`[[string position]]`  
+  "`[cs]`  
    Peeks next char from the stream and returns it. Doesn't change the `cs` state.  
    
-   `[[string position] n]  
+   `[cs n]  
    Peek next n chars from the stream and returns them.`  
    "
-  ([[string position]]
-    (nth string (inc position) nil))
-  ([[string position] n]
+  ([cs]
+    (let [[string position] cs]
+    (nth string (inc position) nil)))
+  ([cs n]
+    (let [[string position] cs]
     (try
       (subvec string (inc position) (+ n 1 position))
     (catch IndexOutOfBoundsException _
       (subvec string (inc position)))
-    (catch NullPointerException _))))
+    (catch NullPointerException _)))))
 
 (defn peek-nth
   "Return the next char at (current postion + offset) in the char-stream."
-  [[string position] offset]
-  (nth string (+ position offset) nil))
+  [cs offset]
+  (let [[string position] cs]
+  (nth string (+ position offset) nil)))
 
 (defn match
   "Returns true if the next char in the stream matches the specified `c`."
-  [[string position] c]
-  (= c (nth string (inc position) nil)))
+  [cs c]
+  (let [[string position] cs]
+  (= c (nth string (inc position) nil))))
 
 (defn match-seq
   "Returns true if the next char in the stream matches the specified sequence `s`."
@@ -64,9 +69,10 @@
    [cs offset]  
    Advances the position by offset, except at the end of the stream,  
    where it returns nil."
-  ([[string position]]
+  ([cs]
+    (let [[string position] cs]
     (when (nth string (inc position) nil)
-      (-> [string (inc position)])))
+      (-> [string (inc position)]))))
   ([[string position :as cs] offset]
     (when (peek-nth cs offset)
       (-> [string (+ offset position)]))))
