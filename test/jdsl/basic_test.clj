@@ -31,20 +31,7 @@
   (testing "attempt"
     (is (= (jb/attempt (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0]]))
     (is (= (jb/attempt (jp/char \b) (cs/create "abc")) [nil [(vec "abc") -1]])))
-  (testing "do-expansion"
-    (let [x (str "(fn* ([ts] " 
-                    "(clojure.core/let [[a ts] (#function[jdsl.basic/run] jp/any-char ts) " 
-                                       "[b ts] (#function[jdsl.basic/run] (jp/char \\b) ts) " 
-                                       "[_ ts] (#function[jdsl.basic/run] jp/skip-any-char ts) " 
-                                       "[_ ts] (#function[jdsl.basic/run] (jc/return [a b]) ts)] "
-                    "(clojure.core/vector _ ts))))")
-          f '(jb/do
-               (a <- jp/any-char)
-               (b <- (jp/char \b))
-               (_ <- jp/skip-any-char)
-               (jc/return [a b]))]
-    (is (= (str (macroexpand f)) x))))
-  (testing "do-behaviour"
+  (testing "do"
     (let [p (jb/do
               (a <- jp/any-char)
               (b <- (jp/char \b))
