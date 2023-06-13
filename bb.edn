@@ -1,4 +1,4 @@
-{:paths ["src" "test"]
+{:paths ["src"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}}
  :tasks {run  {:task (exec 'jdsl.core/-main)}
          test {:extra-paths ["test"]
