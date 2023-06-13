@@ -4,61 +4,58 @@
             [clojure.string :as str]))
 
 (defn <$>
- "Applies a function `f` to the result of parsing with parser `p`.
-  Returns a new parser that applies `p` to the input string `ts`,
-  then applies `f` to the first result and returns a list of the
-  transformed result and the remaining input string.
-
-  Examples:  
-  ```clojure
-  (def parser (char \\a))  
-  (def mapped-parser (<$> str parser))  
-  (jb/run mapped-parser \"abc\") ;=> (\"a\" \"bc\")  
-  ```
-  "
+  "`(<$>) :: (a -> b) -> p a -> p b`
+   Applies the function `f` on the result `a` of running the parser `p`  
+   to produce the parser `p b`."
   [f p]
   (fn [ts]
     (let [[a ts] (jb/run p ts)]
     (jb/ok (f a) ts))))
 
 (defn <$
-  "(<$) :: a -> p b -> p a"
+  "`(<$) :: a -> p b -> p a`  
+   Runs parser `p a`, if successful, replaces the results `b` with `a`."
   [a p]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)]
     (jb/ok a ts))))
 
 (defn $>
-  "($>) :: p a ->  b -> p b"
+  "`($>) :: p a -> b -> p b`  
+   Runs parser `p a`, if successful, replaces the result `a` with `b`."
   [p b]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)]
     (jb/ok b ts))))
 
 (defn return
-  "Wraps a value `a` into parser `p`
-   return :: a -> p a"
+  "`return :: a -> p a`  
+   Wraps a value `a` into parser `p`"
   [a]
   (fn [ts]
     (jb/ok a ts)))
 
 (def zero
-  "parser that always returns ParserError = nil"
+  "`zero` parser fails with ParseError = nil."
   (fn [_] (jb/error nil)))
 
 (defn fail
-  "parser that always returns ParserError = str"
+  "`fail` parser fails with ParseError = `msg`."
   [msg]
   (fn [_] (jb/error msg)))
 
 (defn lift
-  "lift :: (a -> b) -> (a -> p b)"
+  "`lift :: (a -> b) -> (a -> p b)`  
+   Lifts a function `f` to a function that, when passed `a`,  
+   returns a parser `p b`"
   [f]
   (fn [a]
     (return (f a))))
 
 (defn >>=
-  "(>>=) :: p a -> (a -> p b) -> p b"
+  "`(>>=) :: p a -> (a -> p b) -> p b`  
+   Monadic Bind Operation. Runs the parser `p a`, passes the result `a` to `f`  
+   to produce parser `p b`, runs it and returns the result `b`"
   [p f]
   (fn [ts]
     (let [[a ts] (jb/run p ts)
@@ -66,7 +63,9 @@
     (jb/ok b ts))))
 
 (defn =<<
-  "(=<<) :: (a -> p b) -> p a -> p b"
+  "`(=<<) :: (a -> p b) -> p a -> p b`  
+   Runs the parser `p a`, passes the result `a` to `f` to produce parser `p b`,  
+   runs it and returns the result `b`"
   [f p]
   (fn [ts]
     (let [[a ts] (jb/run p ts)
@@ -74,7 +73,8 @@
     (jb/ok b ts))))
 
 (defn >>
-  "(>>) :: p a -> p b -> p b"
+  "`(>>) :: p a -> p b -> p b`  
+   Runs parsers `pa` and `pb` in sequence and returns the result `b`."
   [pa pb]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)
@@ -82,7 +82,8 @@
     (jb/ok b ts))))
 
 (defn <<
-  "(<<) :: p a -> p b -> p a"
+  "`(<<) :: p a -> p b -> p a`  
+   Runs parsers `pa` and `pb` in sequence and returns the result `a`."
   [pa pb]
   (fn [ts]
     (let [[a ts] (jb/run pa ts)
@@ -90,7 +91,9 @@
     (jb/ok a ts))))
 
 (defn <*>
-  "(<*>) :: Monoid p => p (a -> b) -> p a -> p b"
+  "`(<*>) :: Monoid p => p (a -> b) -> p a -> p b`  
+   Runs parser `pf` to get `f` and parser `pa` to get a and returns  
+   the result of calling `f` with `a`."
   [pf pa]
   (fn [ts]
     (let [[f ts] (jb/run pf ts)
@@ -98,8 +101,13 @@
     (jb/ok (f a) ts))))
 
 (defn <>
-  "(<>) :: Monoid p => p a -> p b -> p (a b)
-   (<>) :: Monoid p => f -> p a -> p b -> p (f a b)"
+  "`(<>) :: Monoid p => p a -> p b -> p (a b)`  
+   Runs parser `pa` to get `a` and parser `pb` to get `b` and returns the  
+   result `(list a b)`.
+
+   `(<>) :: Monoid p => f -> p a -> p b -> p (f a b)`  
+   Runs parser `pa` to get `a` and parser `pb` to get `b` and returns the  
+   result calling `f` with `a` and `b` as arguments."
   ([pa pb]
     (<> list pa pb))
   ([f pa pb]
@@ -109,17 +117,8 @@
       (jb/ok (f a b) ts)))))
 
 (defn <?>
- "Returns a parser that takes an input `ts` and runs the parser `p` on it.
-  If the parser succeeds, returns the parsed result. Otherwise, throws an  
-  error with the message `msg`.
-
-  Examples:  
-  ```clojure
-  (def parser (string \"hello\"))
-  ((<?> parser \"Parse failed\") \"hello\") ; => (\"hello\", nil)
-  ((<?> parser \"Parse failed\") \"world\") ; => Error: Parse failed
-  ```
-  "
+  "`(<?>) :: p a -> string -> p a`  
+   Returns parser `p` that fails with the `msg`."
   [p msg]
   (fn [ts]
     (try
@@ -131,16 +130,8 @@
                              (:ts data))))))))
 
 (defn <|>
- "Tries to apply the parser `pa` to the input `ts`. If `pa` succeeds, returns a list with the result of `pa` and the remaining input `ts`. Otherwise, applies the parser `pb` to the input `ts` and returns its result.
-
-  Examples:  
-  ```clojure
-  (def p1 (char \\a))
-  (def p2 (char \\b))
-  (jb/run (<|> p1 p2) \"abc\") ; => (\\a \"bc\")
-  (jb/run (<|> p1 p2) \"bcd\") ; => (\\b \"cd\")
-  ```
-  "
+  "`(<|>) :: p a -> p b -> p (a|b)`  
+   Run parser `p a`, if successful, returns `a`, otherwise runs parser `p b` and retuns `b`"
   [pa pb]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -149,33 +140,15 @@
     (jb/run pb ts)))))
 
 (defn optional
- "The parser `optional` takes a parser `p` as input and returns a new parser  
-  that skips over an optional occurrence of `p`.  If `p` is present,  
-  it is consumed and the result is returned. If `p` is not present, `nil` is returned.
-
-  Examples:  
-  ```clojure
-  (def a (char-parser \\a))  
-  (def b (char-parser \\b))  
-
-  (jb/run (optional a) \"abc\") ; returns (\"a\" \"bc\")  
-  (jb/run (optional a) \"bc\") ; returns (nil \"bc\")  
-  (jb/run (optional b) \"abc\") ; returns (nil \"abc\")  
-  (jb/run (optional b) \"bc\") ; returns (\"a\" \"bc\")  
-  ```
-  "
+  "Checks for an optional occurrence of `p a` and skips it."
   [p]
   (fn [ts]
     (let [[_ ts] (jb/attempt p ts)]
     (jb/ok nil ts))))
 
 (defn peek
-  "Returns a parser that matches the given parser `p`, but does not consume any input.  
-   
-   Example:  
-   (def p (peek (char \\a)))  
-   (jb/run p \"abc\") ; => (\\a, \"abc\")  
-   (jb/run p \"efg\") ; => (nil, \"efg\")
+  "Returns the result of running the parser `p`, doesn't consume input.  
+   Returns nil if failed.
    "
   [p]
   (fn [ts]
@@ -183,28 +156,7 @@
     (jb/ok a ts))))
 
 (defn between
- "The `between` function takes in three parsers `pb`, `pa`, and `pc` and applies them in sequence.  
-  It returns the result of `pb`. The purpose of this function is to parse a sequence of tokens that  
-  are enclosed between two specific tokens.  
-
-  Args:  
-  - `pa`: The parser for the opening token.  
-  - `pb`: The parser for the tokens between the opening and closing tokens.  
-  - `pc`: The parser for the closing token.  
-
-  Returns:  
-  - The result of `pb`.  
-
-  Examples:  
-  ```clojure
-  (def digit (one-of \"0123456789\"))
-  (def digits (many (digit)))
-  (def parser (between (char \\() digits (char \\))))
-
-  (jb/run parser \"(123)\") ; Returns: (\"123\", nil)
-  (jb/run parser \"(456)\") ; Returns: (\"456\", nil)
-  ```
-  "
+  "Runs parsers `pa`, `pb` and `pc` in sequence and returns the result of `pb`."
   [pb pa pc]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)
@@ -213,7 +165,7 @@
     (jb/ok b ts))))
 
 (defn many*
-  "many applies the parser `p` zero or more times"
+  "Applies the parser `p` zero or more times, collect and returns the results in vector."
   [p]
   (fn [ts]
     (loop [ts ts
@@ -224,7 +176,7 @@
       (recur ts (conj as a)))))))
 
 (defn many+
-  "many applies the parser `p` one or more times"
+  "Applies the parser `p` one or more times, collect and returns the results in vector."
   [p]
   (fn [ts]
     (let [[a  ts] (jb/run p ts)
@@ -232,24 +184,22 @@
     (jb/ok (cons a bs) ts))))
 
 (defn choice
-  "The parser choice ps is an optimized implementation of p1 <|> p2 <|> ... <|> pn , where p1 … pn are the parsers in the sequence ps."
+  "Runs a list of parsers in a sequence and returns the result of first successful parser."
   [ps]
   (if (empty? ps)
     zero
   (fn [ts]
     (loop [ps ps
-           a  nil
            ts ts]
-      (if (empty? ps)
-        (or a (jb/ok a ts)) ;; ParseError = nil if a is nil after running all the `ps`
-      (let [[p & ps] ps
-            [a ts]   (jb/attempt p ts)]
-      (if-not (nil? a)
-        (jb/ok a ts)
-      (recur ps a ts))))))))
+      (when-not (empty? ps)
+        (let [[p & ps] ps
+              [a ts]   (jb/attempt p ts)]
+        (if-not (nil? a)
+          (jb/ok a ts)
+        (recur ps ts))))))))
 
 (defn followed-by
-  "The parser followedBy p succeeds if the parser p succeeds at the current position.  
+  "The parser `(followed-by p)` succeeds if the parser `p` succeeds at the current position.  
    Otherwise it fails with error. This parser never changes the parser state."
   [p]
   (fn [ts]
@@ -257,7 +207,7 @@
       (jb/ok nil ts))))
 
 (defn not-followed-by
-  "The parser notFollowedBy p succeeds if the parser p fails to parse at the current position.  
+  "The parser `(not-followed-by p)` succeeds if the parser `p` fails to parse at the current position.  
    Otherwise it fails with an error. This parser never changes the parser state."
   [p]
   (fn [ts]
@@ -266,7 +216,7 @@
       (jb/ok nil ts)))))
 
 (defn skip-many*
-  "The parser `(skip-many* p)` is an optimized implementation of  `(fn [_]) <$> many* p`"
+  "The parser `(skip-many* p)` is an optimized implementation of  `(-> (fn [_]) (<$> many* p))`"
   [p]
   (fn [ts]
     (loop [ts ts]
@@ -276,7 +226,7 @@
       (recur ts))))))
 
 (defn skip-many+
-  "The parser `(skip-many+ p)` is an optimized implementation of `(fn [_]) <$> many+ p`"
+  "The parser `(skip-many+ p)` is an optimized implementation of `(-> (fn [_]) (<$> many+ p))`"
   [p]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)
@@ -284,7 +234,7 @@
     (jb/ok nil ts))))
 
 (defn sep-by*
-  "sepBy p sep parses zero or more occurrences of p, separated by sep."
+  "`(sep-by* p sep)` parses zero or more occurrences of `p`, separated by `sep`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -298,7 +248,7 @@
       (recur ts (conj as a)))))))))
 
 (defn sep-by+
-  "The parser sepBy1 p sep parses one or more occurrences of p separated by sep."
+  "`(sep-by+ p sep)` parses one or more occurrences of `p`, separated by `sep`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/run pa ts)]
@@ -310,7 +260,7 @@
       (recur ts (conj as a))))))))
 
 (defn skip-sep-by*
-  "The parser skip-sep-by* p sep is an optimized implementation of (fn [_]) <$> sep-by* p sep."
+  "The parser `(skip-sep-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-by* p sep))`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -323,7 +273,7 @@
       (recur ts))))))))
 
 (defn skip-sep-by+
-  "The parser skipSepBy+ p sep is an optimized implementation of (fn [_]) <$> sepBy+ p sep."
+  "The parser `(skip-sep-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-by+ p sep))`."
   [pa ps]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
@@ -334,8 +284,8 @@
       (recur ts)))))))
 
 (defn sep-end-by*
-  "The parser sepEndBy p sep parses zero or more occurrences of p separated and  
-   optionally ended by sep. It returns a list of the results returned by p."
+  "The parser `(sep-end-by* p sep)` parses zero or more occurrences of `p` separated and  
+   optionally ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -350,8 +300,8 @@
       (recur ts (conj as a)))))))))
 
 (defn sep-end-by+
-  "The parser sepEndBy1 p sep parses one or more occurrences of p separated and  
-   optionally ended by sep.  It returns a list of the results returned by p."
+  "The parser `(sep-end-by+ p sep)` parses one or more occurrences of `p` separated and  
+   optionally ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/run pa ts)]
@@ -364,7 +314,7 @@
       (recur ts (conj as a))))))))
 
 (defn skip-sep-end-by*
-  "The parser skipSepEndBy p sep is an optimized implementation of sepEndBy p sep |>> ignore."
+  "The parser `(skip-sep-end-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by* p sep))`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -378,7 +328,7 @@
       (recur ts))))))))
 
 (defn skip-sep-end-by+
-  "The parser skipSepEndBy1 p sep is an optimized implementation of sepEndBy1 p sep |>> ignore."
+  "The parser `(skip-sep-end-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by+ p sep))`."
   [pa ps]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
@@ -390,8 +340,8 @@
       (recur ts)))))))
 
 (defn many-till*
-  "manyTill p end applies parser p zero or more times until parser end succeeds.  
-   Returns the list of values returned by p."
+  "`(many-till* p end)` applies parser p zero or more times until parser `end` succeeds.  
+   Returns the list of values returned by `p`."
   [pa pe]
   (fn [ts]
     (loop [ts ts
@@ -403,8 +353,8 @@
       (recur ts (conj as a))))))))
 
 (defn many-till+
-  "manyTill1 p end applies parser p one or more times until parser end succeeds.  
-   Returns the list of values returned by p."
+  "`(many-till+ p end)` applies parser p one or more times until parser `end` succeeds.  
+   Returns the list of values returned by `p`."
   [pa pe]
   (fn [ts]
     (let [[a ts] (jb/run pa ts)]
@@ -417,8 +367,7 @@
       (recur ts (conj as a)))))))))
 
 (defn skip-many-till*
-  "skipManyTill p end applies parser p zero or more times until parser end succeeds.  
-   Returns the list of values returned by p."
+  "The parser `(skip-many-till* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> many-till* p sep))`."
   [pa pe]
   (fn [ts]
     (loop [ts ts]
@@ -429,8 +378,7 @@
       (recur ts)))))))
 
 (defn skip-many-till+
-  "skipManyTill1 p end applies parser p one or more times until parser end succeeds.  
-   Returns the list of values returned by p."
+  "The parser `(skip-many-till+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> many-till+ p sep))`."
   [pa pe]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
