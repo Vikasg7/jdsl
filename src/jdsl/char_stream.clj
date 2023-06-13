@@ -104,7 +104,8 @@
         [\newline (skip cs 2)]
       (if (or (= r \return) (= r \newline))
         [\newline (skip cs 1)]
-      [r (skip cs 1)]))))
+      (when-not (nil? r) ;; r can be nil denoting EOS
+        [r (skip cs 1)])))))
   ([cs c]
     (if (or (= c \return) (= c \newline))
     (when-let [cs (skip-newline cs)]
