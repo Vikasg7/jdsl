@@ -19,7 +19,10 @@
 (def EOS? nil?)
 
 (defn print-error
-  "Prints the message based on original input `ts`, remaining input `ts` and error `msg`."
+  "Prints the parse-error. It receives `e` which is an instance of  
+   `clojure.lang.ExceptionInfo` which contains message, :msg and  
+   :ts and can be accessed with (ex-message e), (:msg (ex-data e)),  
+   (:ts (ex-data e))."
   [e]
   (let [ex-data (ex-data e)
         ex-msg  (ex-message e)]
@@ -75,7 +78,8 @@
 (defn attempt
   "Attempt to run the `p` on input `ts`, backtracks if fails."
   ([p]
-    (fn [ts] (attempt p ts)))
+    (fn [ts] 
+      (attempt p ts)))
   ([p ts]
     (if-let [result (ignore-parse-error (run p ts))]
       (-> result)
