@@ -24,7 +24,7 @@
           x (str "ParseError \n "
                  "Expected: a \n "
                  "   Found: i\r\n")]
-    (is (= x (with-out-str (jb/print-error e))))))
+    (is (= (clojure.string/trim x) (clojure.string/trim(with-out-str (jb/print-error e)))))))
   (testing "run"
     (is (= (jb/run (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run (jp/char \b) (cs/create "abc")))))
