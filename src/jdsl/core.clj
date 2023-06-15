@@ -1,7 +1,7 @@
 (ns jdsl.core
   (:require [jdsl.basic        :as jb]
             [jdsl.combinator   :as jc]
-            [jdsl.flipped      :as jf]
+            [jdsl.combinator-flip      :as jf]
             [jdsl.char-parser  :as jp]
             [jdsl.char-stream  :as cs]))
 
