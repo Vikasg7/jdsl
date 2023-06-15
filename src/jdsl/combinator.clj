@@ -4,9 +4,10 @@
             [clojure.string :as str]))
 
 (defn <$>
-  "`(<$>) :: (a -> b) -> p a -> p b`
+  "`(<$>) :: (a -> b) -> p a -> p b`  
    Applies the function `f` on the result `a` of running the parser `p`  
-   to produce the parser `p b`."
+   to produce the parser `p b`.  
+   `<Flipable>`"
   [f p]
   (fn [ts]
     (let [[a ts] (jb/run p ts)]
@@ -14,7 +15,8 @@
 
 (defn <$
   "`(<$) :: a -> p b -> p a`  
-   Runs parser `p a`, if successful, replaces the results `b` with `a`."
+   Runs parser `p a`, if successful, replaces the results `b` with `a`.  
+   `<Flipable>`"
   [a p]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)]
@@ -22,7 +24,8 @@
 
 (defn $>
   "`($>) :: p a -> b -> p b`  
-   Runs parser `p a`, if successful, replaces the result `a` with `b`."
+   Runs parser `p a`, if successful, replaces the result `a` with `b`.  
+   `<Flipable>`"
   [p b]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)]
@@ -55,7 +58,8 @@
 (defn >>=
   "`(>>=) :: p a -> (a -> p b) -> p b`  
    Monadic Bind Operation. Runs the parser `p a`, passes the result `a` to `f`  
-   to produce parser `p b`, runs it and returns the result `b`"
+   to produce parser `p b`, runs it and returns the result `b`.  
+   `<Flipable>`"
   [p f]
   (fn [ts]
     (let [[a ts] (jb/run p ts)
@@ -65,7 +69,8 @@
 (defn =<<
   "`(=<<) :: (a -> p b) -> p a -> p b`  
    Runs the parser `p a`, passes the result `a` to `f` to produce parser `p b`,  
-   runs it and returns the result `b`"
+   runs it and returns the result `b`  
+   `<Flipable>`"
   [f p]
   (fn [ts]
     (let [[a ts] (jb/run p ts)
@@ -74,7 +79,8 @@
 
 (defn >>
   "`(>>) :: p a -> p b -> p b`  
-   Runs parsers `pa` and `pb` in sequence and returns the result `b`."
+   Runs parsers `pa` and `pb` in sequence and returns the result `b`.  
+   `<Flipable>`"
   [pa pb]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)
@@ -83,7 +89,8 @@
 
 (defn <<
   "`(<<) :: p a -> p b -> p a`  
-   Runs parsers `pa` and `pb` in sequence and returns the result `a`."
+   Runs parsers `pa` and `pb` in sequence and returns the result `a`.  
+   `<Flipable>`"
   [pa pb]
   (fn [ts]
     (let [[a ts] (jb/run pa ts)
@@ -93,7 +100,8 @@
 (defn <*>
   "`(<*>) :: Monoid p => p (a -> b) -> p a -> p b`  
    Runs parser `pf` to get `f` and parser `pa` to get a and returns  
-   the result of calling `f` with `a`."
+   the result of calling `f` with `a`.  
+   `<Flipable>`"
   [pf pa]
   (fn [ts]
     (let [[f ts] (jb/run pf ts)
@@ -118,7 +126,8 @@
 
 (defn <?>
   "`(<?>) :: p a -> string -> p a`  
-   Returns parser `p` that fails with the `msg`."
+   Returns parser `p` that fails with the `msg`.  
+   `<Flipable>`"
   [p msg]
   (fn [ts]
     (try
@@ -156,7 +165,8 @@
     (jb/ok a ts))))
 
 (defn between
-  "Runs parsers `pa`, `pb` and `pc` in sequence and returns the result of `pb`."
+  "Runs parsers `pa`, `pb` and `pc` in sequence and returns the result of `pb`.  
+   `<Flipable>`"
   [pb pa pc]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)
