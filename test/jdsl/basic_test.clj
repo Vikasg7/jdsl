@@ -3,7 +3,8 @@
             [jdsl.basic :as jb]
             [jdsl.char-stream :as cs]
             [jdsl.char-parser :as jp]
-            [jdsl.combinator :as jc]))
+            [jdsl.combinator :as jc]
+            [clojure.string :as str]))
 
 (deftest basic-test
   (testing "error?"
@@ -24,7 +25,7 @@
           x (str "ParseError \n "
                  "Expected: a \n "
                  "   Found: i\r\n")]
-    (is (= (clojure.string/trim x) (clojure.string/trim(with-out-str (jb/print-error e)))))))
+    (is (= (str/trim x) (str/trim (with-out-str (jb/print-error e)))))))
   (testing "run"
     (is (= (jb/run (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run (jp/char \b) (cs/create "abc")))))

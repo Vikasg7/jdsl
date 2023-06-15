@@ -66,7 +66,7 @@
     (-> result)))))
 
 (defmacro ignore-parse-error 
-  "macro to catch-ignore only parse errors and throw rest of them."
+  "Macro to catch-ignore only parse errors and throw rest of them."
   ^:private
   [& body]
   `(try 
@@ -76,7 +76,12 @@
        (throw ~'e)))))
 
 (defn attempt
-  "Attempt to run the `p` on input `ts`, backtracks if fails."
+  "[p]  
+   Returs a parser that attempts parser `p`, returns nil as result, if fails.  
+   It doesn't affect `ts` state in case of failure.  
+   
+   [p ts]  
+   Attempts to run parser `p`, backtracks if fails."
   ([p]
     (fn [ts] 
       (attempt p ts)))
@@ -89,14 +94,14 @@
   "Expands (a <- parser) or (parser) bindings in the do macro"
   [[sym op prsr :as expr]]
   {:pre [(> (count expr) 0)]}
-  (if (= op '<-)
-    [[sym 'ts] (list run prsr 'ts)]
-  [['_ 'ts] (list run expr 'ts)]))
+  (cond (= op '<-) [[sym 'ts] (list run prsr 'ts)]
+        :else      [['_  'ts] (list run expr 'ts)]))
 
 (defmacro do
   "Haskel like do macro to abstract away passing around `ts` and calling `run` function."
   [& exprs]
-  (let [bindings (mapcat expand exprs)]
+  (let [bindings (mapcat expand (butlast exprs))
+        ret-form (list run (last exprs) 'ts)]
   `(fn [~'ts]
     (let [~@bindings]
-    (vector ~'_ ~'ts)))))
+    (~@ret-form)))))
