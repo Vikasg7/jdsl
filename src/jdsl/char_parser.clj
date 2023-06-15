@@ -75,9 +75,20 @@
   "Parses a upper case character."
   (satisfy (fn upper? [c] (<= (int \A) (int c) (int \Z)))))
 
+(def alphabet
+  "Parses alphabets. a-z or A-Z"
+  (satisfy (fn upper? [c] (or (<= (int \A) (int c) (int \Z))
+                              (<= (int \a) (int c) (int \z))))))
+
 (def digit
   "Parses a digit (0-9)."
   (satisfy (fn digit? [c] (<= (int \0) (int c) (int \9)))))
+
+(def alpha-num
+  "Parser alpha-numeric character. a-z or A-Z or 0-9"
+  (satisfy (fn upper? [c] (or (<= (int \A) (int c) (int \Z))
+                              (<= (int \a) (int c) (int \z))
+                              (<= (int \0) (int c) (int \9))))))
 
 (def hex
   "Parses a hex character."

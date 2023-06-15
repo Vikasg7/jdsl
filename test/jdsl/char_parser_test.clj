@@ -81,6 +81,20 @@
     (is (= (jb/run jp/upper (cs/create "A"))  [\A [(vec "A") 0]]))
     (is (= (jb/run jp/upper (cs/create "Z")) [\Z [(vec "Z") 0]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run jp/upper (cs/create "a")))))
+  (testing "alphabet"
+    (is (= (jb/run jp/alphabet (cs/create "A"))  [\A [(vec "A") 0]]))
+    (is (= (jb/run jp/alphabet (cs/create "Z")) [\Z [(vec "Z") 0]]))
+    (is (= (jb/run jp/alphabet (cs/create "a"))  [\a [(vec "a") 0]]))
+    (is (= (jb/run jp/alphabet (cs/create "z")) [\z [(vec "z") 0]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run jp/alphabet (cs/create "0"))))) 
+  (testing "alphabet"
+    (is (= (jb/run jp/alpha-num (cs/create "A"))  [\A [(vec "A") 0]]))
+    (is (= (jb/run jp/alpha-num (cs/create "Z")) [\Z [(vec "Z") 0]]))
+    (is (= (jb/run jp/alpha-num (cs/create "a"))  [\a [(vec "a") 0]]))
+    (is (= (jb/run jp/alpha-num (cs/create "z")) [\z [(vec "z") 0]]))
+    (is (= (jb/run jp/alpha-num (cs/create "0"))  [\0 [(vec "0") 0]]))
+    (is (= (jb/run jp/alpha-num (cs/create "9")) [\9 [(vec "9") 0]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run jp/alpha-num (cs/create ","))))) 
   (testing "digit"
     (is (= (jb/run jp/digit (cs/create "0"))  [\0 [(vec "0") 0]]))
     (is (= (jb/run jp/digit (cs/create "9")) [\9 [(vec "9") 0]]))
