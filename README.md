@@ -2,14 +2,14 @@
 A Parser Combinator Library in Clojure  
 
 ### Definitions  
-A _Parser_ is a function that takes a char stream as an argument, for example string, and returns the parsed character/characters and rest of the char stream. From Clojure's POV, it will something like this:  
+A _Parser_ is a function that takes a char stream as an argument, for example string, and returns the parsed character/characters and rest of the char stream. From Clojure's POV, it looks something like this:  
 ```clojure
 (def parser
   (fn [char-stream]
     ;; Do something with the char-stream to parse a value
     (vector value char-stream)))
 ```
-A _Parser Combinator_, on the other hand, is a higher order function (a function that takes other functions as an argument, for example, `map`, `filter`) that takes A Parser (A function) as an argument and returns another Parser. In that sense, A Parser Combinator is something that operates on Parsers. A few examples of Parser Combinators on this library can be - `choice`, `between`, `optional`, `many*`, `many+` etc. Lets see an few example.  
+A _Parser Combinator_, on the other hand, is a higher order function (a function that takes other functions as an argument, for example, `map`, `filter`) that takes A Parser (A function) as an argument and returns another Parser. In that sense, A Parser Combinator is something that operates on Parsers. A few examples of Parser Combinators on this library can be - `choice`, `between`, `optional`, `many*`, `many+` etc. Lets see an example.  
 ```clojure
 (ns examples.readme-example
   (:require [jdsl.char-parser :as jp]
