@@ -8,8 +8,8 @@
    #_position= -1])
 
 (defn next
-  "Returns the next char in the char-stream if available else nil.  
-   It also returns updated char-stream. It doesn't mutate incoming  
+  "Returns the next char in the char-stream if available else nil.
+   It also returns updated char-stream. It doesn't mutate incoming
    char-stream state coz Mutation kills BackTracking."
   [cs]
   (let [[string position] cs]
@@ -22,11 +22,11 @@
     (-> [cs cs])))
 
 (defn peek
-  "`[cs]`  
-   Peeks next char from the stream and returns it. Doesn't change the `cs` state.  
+  "`[cs]`
+   Peeks next char from the stream and returns it. Doesn't change the `cs` state.
    
-   `[cs n]  
-   Peek next n chars from the stream and returns them.`  
+   `[cs n]
+   Peek next n chars from the stream and returns them.`
    "
   ([cs]
     (let [[string position] cs]
@@ -62,12 +62,12 @@
   (= (seq string) (peek cs (count string))))
 
 (defn skip
-  "[[string position :as cs]]  
-   Advances the position within the stream by 1 char,   
-   except at the end of the stream, where it returns nil.  
+  "[[string position :as cs]]
+   Advances the position within the stream by 1 char, 
+   except at the end of the stream, where it returns nil.
    
-   [cs offset]  
-   Advances the position by offset, except at the end of the stream,  
+   [cs offset]
+   Advances the position by offset, except at the end of the stream,
    where it returns nil."
   ([cs]
     (let [[string position] cs]
@@ -93,7 +93,7 @@
     (skip cs 1)))
 
 (defn read
-  "[cs]  
+  "[cs]
    Reads the next char, also takes care of \\r\\n, \\r, \\n  
 
    [cs c]

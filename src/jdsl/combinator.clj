@@ -5,7 +5,7 @@
 
 (defn <$>
   "`(<$>) :: (a -> b) -> p a -> p b`  
-   Applies the function `f` on the result `a` of running the parser `p`  
+   Applies the function `f` on the result `a` of running the parser `p`
    to produce the parser `p b`.  
    `<Flipable>`"
   [f p]
@@ -49,7 +49,7 @@
 
 (defn lift
   "`lift :: (a -> b) -> (a -> p b)`  
-   Lifts a function `f` to a function that, when passed `a`,  
+   Lifts a function `f` to a function that, when passed `a`,
    returns a parser `p b`"
   [f]
   (fn [a]
@@ -57,7 +57,7 @@
 
 (defn >>=
   "`(>>=) :: p a -> (a -> p b) -> p b`  
-   Monadic Bind Operation. Runs the parser `p a`, passes the result `a` to `f`  
+   Monadic Bind Operation. Runs the parser `p a`, passes the result `a` to `f`
    to produce parser `p b`, runs it and returns the result `b`.  
    `<Flipable>`"
   [p f]
@@ -68,7 +68,7 @@
 
 (defn =<<
   "`(=<<) :: (a -> p b) -> p a -> p b`  
-   Runs the parser `p a`, passes the result `a` to `f` to produce parser `p b`,  
+   Runs the parser `p a`, passes the result `a` to `f` to produce parser `p b`,
    runs it and returns the result `b`  
    `<Flipable>`"
   [f p]
@@ -99,7 +99,7 @@
 
 (defn <*>
   "`(<*>) :: Monoid p => p (a -> b) -> p a -> p b`  
-   Runs parser `pf` to get `f` and parser `pa` to get a and returns  
+   Runs parser `pf` to get `f` and parser `pa` to get a and returns
    the result of calling `f` with `a`.  
    `<Flipable>`"
   [pf pa]
@@ -110,11 +110,11 @@
 
 (defn <>
   "`(<>) :: Monoid p => p a -> p b -> p (a b)`  
-   Runs parser `pa` to get `a` and parser `pb` to get `b` and returns the  
+   Runs parser `pa` to get `a` and parser `pb` to get `b` and returns the
    result `(list a b)`.
 
    `(<>) :: Monoid p => f -> p a -> p b -> p (f a b)`  
-   Runs parser `pa` to get `a` and parser `pb` to get `b` and returns the  
+   Runs parser `pa` to get `a` and parser `pb` to get `b` and returns the
    result calling `f` with `a` and `b` as arguments."
   ([pa pb]
     (<> list pa pb))
@@ -156,7 +156,7 @@
     (jb/ok nil ts))))
 
 (defn peek
-  "Returns the result of running the parser `p`, doesn't consume input.  
+  "Returns the result of running the parser `p`, doesn't consume input.
    Returns nil if failed.
    "
   [p]
@@ -209,7 +209,7 @@
         (recur ps ts))))))))
 
 (defn followed-by
-  "The parser `(followed-by p)` succeeds if the parser `p` succeeds at the current position.  
+  "The parser `(followed-by p)` succeeds if the parser `p` succeeds at the current position.
    Otherwise it fails with error. This parser never changes the parser state."
   [p]
   (fn [ts]
@@ -217,7 +217,7 @@
       (jb/ok nil ts))))
 
 (defn not-followed-by
-  "The parser `(not-followed-by p)` succeeds if the parser `p` fails to parse at the current position.  
+  "The parser `(not-followed-by p)` succeeds if the parser `p` fails to parse at the current position.
    Otherwise it fails with an error. This parser never changes the parser state."
   [p]
   (fn [ts]
@@ -294,7 +294,7 @@
       (recur ts)))))))
 
 (defn end-by*
-  "The parser `(end-by* p sep)` parses zero or more occurrences of `p` separated and  
+  "The parser `(end-by* p sep)` parses zero or more occurrences of `p` separated and
    ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
@@ -309,7 +309,7 @@
       (recur ts (conj as a)))))))))
 
 (defn end-by+
-  "The parser `(end-by+ p sep)` parses one or more occurrences of `p` separated and  
+  "The parser `(end-by+ p sep)` parses one or more occurrences of `p` separated and
    ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
@@ -350,7 +350,7 @@
       (recur ts))))))))
 
 (defn sep-end-by*
-  "The parser `(sep-end-by* p sep)` parses zero or more occurrences of `p` separated and  
+  "The parser `(sep-end-by* p sep)` parses zero or more occurrences of `p` separated and
    optionally ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
@@ -366,7 +366,7 @@
       (recur ts (conj as a)))))))))
 
 (defn sep-end-by+
-  "The parser `(sep-end-by+ p sep)` parses one or more occurrences of `p` separated and  
+  "The parser `(sep-end-by+ p sep)` parses one or more occurrences of `p` separated and
    optionally ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
@@ -406,7 +406,7 @@
       (recur ts)))))))
 
 (defn many-till*
-  "`(many-till* p end)` applies parser p zero or more times until parser `end` succeeds.  
+  "`(many-till* p end)` applies parser p zero or more times until parser `end` succeeds.
    Returns the list of values returned by `p`."
   [pa pe]
   (fn [ts]
@@ -419,7 +419,7 @@
       (recur ts (conj as a))))))))
 
 (defn many-till+
-  "`(many-till+ p end)` applies parser p one or more times until parser `end` succeeds.  
+  "`(many-till+ p end)` applies parser p one or more times until parser `end` succeeds.
    Returns the list of values returned by `p`."
   [pa pe]
   (fn [ts]

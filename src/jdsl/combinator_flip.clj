@@ -1,7 +1,7 @@
 (ns jdsl.combinator-flip
-  "This namespace creates and holds version of jdsl.combinator functions with parameters  
-   in reverse orders. This might come in handy while extending parses with -> and ->>  
-   (thread macros). So when you require the jdsl.flipped namespace, you should be able  
+  "This namespace creates and holds version of jdsl.combinator functions with parameters
+   in reverse orders. This might come in handy while extending parses with -> and ->>
+   (thread macros). So when you require the jdsl.flipped namespace, you should be able
    to access functions in jsdl.combinators with their arguments flipped."
   (:refer-clojure :exclude [peek map apply])
   (:require [clojure.string :as str]))

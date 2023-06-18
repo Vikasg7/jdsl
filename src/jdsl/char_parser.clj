@@ -30,7 +30,7 @@
       (jb/ok nil cs))))
 
 (defn satisfy
-  "`satisfy f` parses any char or newline for which  
+  "`satisfy f` parses any char or newline for which
    the predicate function `f` returns true."
   [pred]
   (fn [cs]

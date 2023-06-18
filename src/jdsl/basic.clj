@@ -19,9 +19,9 @@
 (def EOS? nil?)
 
 (defn print-error
-  "Prints the parse-error. It receives `e` which is an instance of  
-   `clojure.lang.ExceptionInfo` which contains message, :msg and  
-   :ts and can be accessed with (ex-message e), (:msg (ex-data e)),  
+  "Prints the parse-error. It receives `e` which is an instance of
+   `clojure.lang.ExceptionInfo` which contains message, :msg and
+   :ts and can be accessed with (ex-message e), (:msg (ex-data e)),
    (:ts (ex-data e))."
   [e]
   (let [ex-data (ex-data e)
@@ -36,8 +36,8 @@
   (ex-info "ParseError" {:ts ts :msg msg}))
 
 (defn run
-  "Runs the parser `p` on input `ts`, throws parsing error.  
-   Parse Error contains following fields which can be accessed  
+  "Runs the parser `p` on input `ts`, throws parsing error.
+   Parse Error contains following fields which can be accessed
    using `ex-message` and `ex-data` function.  
 
    ```clojure
@@ -54,7 +54,7 @@
      ;; when the error happened.
      (println (:ts (ex-message e)))))
    ```  
-   You can use all of above information to create your own  
+   You can use all of above information to create your own
    custom error print function."
   ([p]
     (fn [ts]
@@ -77,7 +77,7 @@
 
 (defn attempt
   "[p]  
-   Returs a parser that attempts parser `p`, returns nil as result, if fails.  
+   Returs a parser that attempts parser `p`, returns nil as result, if fails.
    It doesn't affect `ts` state in case of failure.  
    
    [p ts]  
