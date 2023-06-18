@@ -92,10 +92,10 @@
 
 (defn- expand 
   "Expands (a <- parser) or (parser) bindings in the do macro"
-  [[sym op prsr :as expr]]
-  {:pre [(> (count expr) 0)]}
+  [expr]
+  (let [[sym op prsr] (when (list? expr) expr)]
   (cond (= op '<-) [[sym 'ts] (list run prsr 'ts)]
-        :else      [['_  'ts] (list run expr 'ts)]))
+        :else      [['_  'ts] (list run expr 'ts)])))
 
 (defmacro do
   "Haskel like do macro to abstract away passing around `ts` and calling `run` function."
