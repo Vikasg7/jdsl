@@ -19,9 +19,9 @@
     (is (= (jc/zero (cs/create "abc")) nil))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run jc/zero (cs/create "abc")))))
   (testing "fail"
-    (is (jb/error? ((jc/fail "Expected: a") (cs/create "abc"))))
-    (is (= ((jc/fail "Expected: a") (cs/create "abc")) "Expected: a"))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run (jc/fail "Exception: a") (cs/create "abc")))))
+    (is (jb/error? ((jc/fail-with "Expected: a") (cs/create "abc"))))
+    (is (= ((jc/fail-with "Expected: a") (cs/create "abc")) "Expected: a"))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run (jc/fail-with "Exception: a") (cs/create "abc")))))
   (testing "lift"
     (is (= (jb/run ((jc/lift {:a 1}) :a) (cs/create "abc")) [1 [(vec "abc") -1]])))
   (testing ">>="

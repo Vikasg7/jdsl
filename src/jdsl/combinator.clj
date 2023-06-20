@@ -42,8 +42,8 @@
   "`zero` parser fails with ParseError = nil."
   (fn [_] (jb/error nil)))
 
-(defn fail
-  "`fail` parser fails with ParseError = `msg`."
+(defn fail-with
+  "`fail-with` parser fails with ParseError = `msg`."
   [msg]
   (fn [_] (jb/error msg)))
 
