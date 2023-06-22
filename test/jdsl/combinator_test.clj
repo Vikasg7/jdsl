@@ -82,21 +82,29 @@
   (testing "sep-by*"
     (is (= (jb/run (jc/sep-by* jp/any-char (jp/char \,)) (cs/create "a,bc")) [[\a \b] [(vec "a,bc") 2]]))
     (is (= (jb/run (jc/sep-by* jp/any-char (jp/char \,)) (cs/create "ac")) [[\a] [(vec "ac") 0]]))
-    (is (= (jb/run (jc/sep-by* (jp/char \b) (jp/char \,)) (cs/create "aba")) [nil [(vec "aba") -1]])))
+    (is (= (jb/run (jc/sep-by* (jp/char \b) (jp/char \,)) (cs/create "aba")) [nil [(vec "aba") -1]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/sep-by* jp/any-char (jp/char \,)) (cs/create "a,b,")))))
   (testing "sep-by+"
     (is (= (jb/run (jc/sep-by+ jp/any-char (jp/char \,)) (cs/create "a,bc")) [[\a \b] [(vec "a,bc") 2]]))
     (is (= (jb/run (jc/sep-by+ jp/any-char (jp/char \,)) (cs/create "ac")) [[\a] [(vec "ac") 0]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
-                          (jb/run (jc/sep-by+ (jp/char \b) (jp/char \,)) (cs/create "a,bc")))))
+                          (jb/run (jc/sep-by+ (jp/char \b) (jp/char \,)) (cs/create "a,bc"))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/sep-by* jp/any-char (jp/char \,)) (cs/create "a,b,")))))
   (testing "skip-sep-by*"
     (is (= (jb/run (jc/skip-sep-by* jp/any-char (jp/char \,)) (cs/create "a,bc")) [nil [(vec "a,bc") 2]]))
     (is (= (jb/run (jc/skip-sep-by* jp/any-char (jp/char \,)) (cs/create "ac")) [nil [(vec "ac") 0]]))
-    (is (= (jb/run (jc/skip-sep-by* (jp/char \b) (jp/char \,)) (cs/create "aba")) [nil [(vec "aba") -1]])))
+    (is (= (jb/run (jc/skip-sep-by* (jp/char \b) (jp/char \,)) (cs/create "aba")) [nil [(vec "aba") -1]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/sep-by* jp/any-char (jp/char \,)) (cs/create "a,b,")))))
   (testing "skip-sep-by+"
     (is (= (jb/run (jc/skip-sep-by+ jp/any-char (jp/char \,)) (cs/create "a,bc")) [nil [(vec "a,bc") 2]]))
     (is (= (jb/run (jc/skip-sep-by+ jp/any-char (jp/char \,)) (cs/create "ac")) [nil [(vec "ac") 0]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
-                          (jb/run (jc/skip-sep-by+ (jp/char \b) (jp/char \,)) (cs/create "a,bc")))))
+                          (jb/run (jc/skip-sep-by+ (jp/char \b) (jp/char \,)) (cs/create "a,bc"))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/sep-by* jp/any-char (jp/char \,)) (cs/create "a,b,")))))
   (testing "sep-end-by*"
     (is (= (jb/run (jc/sep-end-by* jp/any-char (jp/char \,)) (cs/create "a,b,c")) [[\a \b \c] [(vec "a,b,c") 4]]))
     (is (= (jb/run (jc/sep-end-by* jp/any-char (jp/char \,)) (cs/create "a,c")) [[\a \c] [(vec "a,c") 2]]))
@@ -112,30 +120,6 @@
     (is (= (jb/run (jc/sep-end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,")) [[\a \b] [(vec "a,b,") 3]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
                           (jb/run (jc/sep-end-by+ (jp/char \b) (jp/char \,)) (cs/create "a,bc")))))
-  (testing "end-by*"
-    (is (= (jb/run (jc/end-by* jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [[\a \b \c] [(vec "a,b,c,") 5]]))
-    (is (= (jb/run (jc/end-by* jp/any-char (jp/char \,)) (cs/create "a,c,")) [[\a \c] [(vec "a,c,") 3]]))
-    (is (= (jb/run (jc/end-by* jp/any-char (jp/char \,)) (cs/create "a,b")) [[\a] [(vec "a,b") 1]]))
-    (is (= (jb/run (jc/end-by* jp/any-char (jp/char \,)) (cs/create "ac")) [nil [(vec "ac") -1]])))
-  (testing "end-by+"
-    (is (= (jb/run (jc/end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [[\a \b \c] [(vec "a,b,c,") 5]]))
-    (is (= (jb/run (jc/end-by+ jp/any-char (jp/char \,)) (cs/create "a,c")) [[\a] [(vec "a,c") 1]]))
-    (is (= (jb/run (jc/end-by+ jp/any-char (jp/char \,)) (cs/create "a,")) [[\a] [(vec "a,") 1]]))
-    (is (= (jb/run (jc/end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,")) [[\a \b] [(vec "a,b,") 3]]))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
-                          (jb/run (jc/end-by+ (jp/char \b) (jp/char \,)) (cs/create "bbc")))))
-  (testing "skip-end-by*"
-    (is (= (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [nil [(vec "a,b,c,") 5]]))
-    (is (= (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "a,c,")) [nil [(vec "a,c,") 3]]))
-    (is (= (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "a,b")) [nil [(vec "a,b") 1]]))
-    (is (= (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "ac")) [nil [(vec "ac") -1]])))
-  (testing "skip-end-by+"
-    (is (= (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [nil [(vec "a,b,c,") 5]]))
-    (is (= (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,c")) [nil [(vec "a,c") 1]]))
-    (is (= (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,")) [nil [(vec "a,") 1]]))
-    (is (= (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,")) [nil [(vec "a,b,") 3]]))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
-                          (jb/run (jc/skip-end-by+ (jp/char \b) (jp/char \,)) (cs/create "bbc")))))
   (testing "skip-sep-end-by*"
     (is (= (jb/run (jc/skip-sep-end-by* jp/any-char (jp/char \,)) (cs/create "a,b,c")) [nil [(vec "a,b,c") 4]]))
     (is (= (jb/run (jc/skip-sep-end-by* jp/any-char (jp/char \,)) (cs/create "a,c")) [nil [(vec "a,c") 2]]))
@@ -151,6 +135,36 @@
     (is (= (jb/run (jc/skip-sep-end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,")) [nil [(vec "a,b,") 3]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
                           (jb/run (jc/skip-sep-end-by+ (jp/char \b) (jp/char \,)) (cs/create "a,bc")))))
+  (testing "end-by*"
+    (is (= (jb/run (jc/end-by* jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [[\a \b \c] [(vec "a,b,c,") 5]]))
+    (is (= (jb/run (jc/end-by* jp/any-char (jp/char \,)) (cs/create "a,c,")) [[\a \c] [(vec "a,c,") 3]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                         (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "ac"))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "a,b")))))
+  (testing "end-by+"
+    (is (= (jb/run (jc/end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [[\a \b \c] [(vec "a,b,c,") 5]]))
+    (is (= (jb/run (jc/end-by+ jp/any-char (jp/char \,)) (cs/create "a,")) [[\a] [(vec "a,") 1]]))
+    (is (= (jb/run (jc/end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,")) [[\a \b] [(vec "a,b,") 3]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/end-by+ (jp/char \b) (jp/char \,)) (cs/create "bbc"))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                         (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,c")))))
+  (testing "skip-end-by*"
+    (is (= (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [nil [(vec "a,b,c,") 5]]))
+    (is (= (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "a,c,")) [nil [(vec "a,c,") 3]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                         (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "ac"))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/skip-end-by* jp/any-char (jp/char \,)) (cs/create "a,b")))))
+  (testing "skip-end-by+"
+    (is (= (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,c,")) [nil [(vec "a,b,c,") 5]]))
+    (is (= (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,")) [nil [(vec "a,") 1]]))
+    (is (= (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,b,")) [nil [(vec "a,b,") 3]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                          (jb/run (jc/skip-end-by+ (jp/char \b) (jp/char \,)) (cs/create "bbc"))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError"
+                         (jb/run (jc/skip-end-by+ jp/any-char (jp/char \,)) (cs/create "a,c")))))
   (testing "many-till*"
     (is (= (jb/run (jc/>> (jp/char \<) (jc/many-till* jp/any-char (jp/char \>))) (cs/create "<abc>")) [[\a \b \c] [(vec "<abc>") 4]]))
     (is (= (jb/run (jc/>> (jp/char \<) (jc/many-till* jp/any-char (jp/char \>))) (cs/create "<>")) [nil [(vec "<>") 1]]))

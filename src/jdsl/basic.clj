@@ -76,19 +76,20 @@
        (throw ~'e)))))
 
 (defn attempt
-  "[p]  
-   Returs a parser that attempts parser `p`, returns nil as result, if fails.
-   It doesn't affect `ts` state in case of failure.  
-   
-   [p ts]  
-   Attempts to run parser `p`, backtracks if fails."
-  ([p]
-    (fn [ts] 
-      (attempt p ts)))
-  ([p ts]
-    (if-let [result (ignore-parse-error (run p ts))]
-      (-> result)
-    (vector nil ts))))
+  "Attempts to run parser `p`, backtracks if fails AND no input is consumed.
+   It compares the position of `ts` returned as part of `(ex-data e)` with original 
+   position of `ts` passed as an argument to `attempt` function to decide whether
+   input is consumed or not."
+  [p ts]
+  (try
+    (run p ts)
+  (catch clojure.lang.ExceptionInfo e
+    (if (not= "ParseError" (ex-message e))
+      (throw e)
+    (let [cs  (:ts (ex-data e))]
+    (if (not= (cs/position ts) (cs/position cs))
+      (throw e)
+    (vector nil ts)))))))
 
 (defn- expand 
   "Expands (a <- parser) or (parser) bindings in the do macro"

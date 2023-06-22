@@ -155,6 +155,14 @@
     (let [[_ ts] (jb/attempt p ts)]
     (jb/ok nil ts))))
 
+(defn attempt
+  "Tries the parser `p` and backtracks if fails."
+  [p]
+  (fn [ts]
+    (if-let [result (jb/ignore-parse-error (jb/run p ts))]
+      (-> result)
+    (vector nil ts))))
+
 (defn peek
   "Returns the result of running the parser `p`, doesn't consume input.
    Returns nil if failed.
@@ -189,9 +197,13 @@
   "Applies the parser `p` one or more times, collect and returns the results in vector."
   [p]
   (fn [ts]
-    (let [[a  ts] (jb/run p ts)
-          [bs ts] (jb/run (many* p) ts)]
-    (jb/ok (cons a bs) ts))))
+    (let [[a ts] (jb/run p ts)]
+    (loop [ts ts
+           as [a]]
+      (let [[a ts] (jb/attempt p ts)]
+      (if (nil? a)
+        (jb/ok as ts)
+      (recur ts (conj as a))))))))
 
 (defn choice
   "Runs a list of parsers in a sequence and returns the result of first successful parser."
@@ -239,9 +251,12 @@
   "The parser `(skip-many+ p)` is an optimized implementation of `(-> (fn [_]) (<$> many+ p))`"
   [p]
   (fn [ts]
-    (let [[_ ts] (jb/run p ts)
-          [_ ts] (jb/run (skip-many* p) ts)]
-    (jb/ok nil ts))))
+    (let [[_ ts] (jb/run p ts)]
+    (loop [ts ts]
+      (let [[a ts] (jb/attempt p ts)]
+      (if (nil? a)
+        (jb/ok nil ts)
+      (recur ts)))))))
 
 (defn sep-by*
   "`(sep-by* p sep)` parses zero or more occurrences of `p`, separated by `sep`."
@@ -252,10 +267,11 @@
       (jb/ok nil ts)
     (loop [ts ts
            as [a]]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
-      (if (nil? a)
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
         (jb/ok as ts)
-      (recur ts (conj as a)))))))))
+      (let [[a ts] (jb/run pa ts)]
+      (recur ts (conj as a))))))))))
 
 (defn sep-by+
   "`(sep-by+ p sep)` parses one or more occurrences of `p`, separated by `sep`."
@@ -264,10 +280,11 @@
     (let [[a ts] (jb/run pa ts)]
     (loop [ts ts
            as [a]]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
-      (if (nil? a)
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
         (jb/ok as ts)
-      (recur ts (conj as a))))))))
+      (let [[a ts] (jb/run pa ts)]
+      (recur ts (conj as a)))))))))
 
 (defn skip-sep-by*
   "The parser `(skip-sep-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-by* p sep))`."
@@ -277,10 +294,11 @@
     (if (nil? a)
       (jb/ok nil ts)
     (loop [ts ts]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
-      (if (nil? a)
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
         (jb/ok nil ts)
-      (recur ts))))))))
+      (let [[_ ts] (jb/run pa ts)]
+      (recur ts)))))))))
 
 (defn skip-sep-by+
   "The parser `(skip-sep-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-by+ p sep))`."
@@ -288,65 +306,70 @@
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
     (loop [ts ts]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
-      (if (nil? a)
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
         (jb/ok nil ts)
-      (recur ts)))))))
+      (let [[_ ts] (jb/run pa ts)]
+      (recur ts))))))))
 
 (defn end-by*
   "The parser `(end-by* p sep)` parses zero or more occurrences of `p` separated and
    ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
-    (let [[a ts] (jb/attempt (-> pa (<< ps)) ts)]
+    (let [[a ts] (jb/attempt pa ts)]
     (if (nil? a)
       (jb/ok nil ts)
+    (let [[_ ts] (jb/run ps ts)]
     (loop [ts ts
            as [a]]
-      (let [[a ts] (jb/attempt (-> pa (<< ps)) ts)]
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
         (jb/ok as ts)
-      (recur ts (conj as a)))))))))
+      (let [[_ ts] (jb/run ps ts)]
+      (recur ts (conj as a)))))))))))
 
 (defn end-by+
   "The parser `(end-by+ p sep)` parses one or more occurrences of `p` separated and
    ended by `sep`. It returns a vector of the results returned by `p`."
   [pa ps]
   (fn [ts]
-    (let [[a ts] (jb/run (-> pa (<< ps)) ts)]
-    (if (nil? a)
-      (jb/ok nil ts)
+    (let [[a ts] (jb/run pa ts)
+          [_ ts] (jb/run ps ts)]
     (loop [ts ts
            as [a]]
-      (let [[a ts] (jb/attempt (-> pa (<< ps)) ts)]
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
         (jb/ok as ts)
+      (let [[_ ts] (jb/run ps ts)]
       (recur ts (conj as a)))))))))
 
 (defn skip-end-by*
   "The parser `(skip-end-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by* p sep))`."
   [pa ps]
   (fn [ts]
-    (let [[a ts] (jb/attempt (-> pa (<< ps)) ts)]
+    (let [[a ts] (jb/attempt pa ts)]
     (if (nil? a)
       (jb/ok nil ts)
+    (let [[_ ts] (jb/run ps ts)]
     (loop [ts ts]
-      (let [[a ts] (jb/attempt (-> pa (<< ps)) ts)]
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
         (jb/ok nil ts)
-      (recur ts))))))))
+      (let [[_ ts] (jb/run ps ts)]
+      (recur ts))))))))))
 
 (defn skip-end-by+
   "The parser `(skip-end-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by+ p sep))`."
   [pa ps]
   (fn [ts]
-    (let [[a ts] (jb/run (-> pa (<< ps)) ts)]
-    (if (nil? a)
-      (jb/ok nil ts)
+    (let [[_ ts] (jb/run pa ts)
+          [_ ts] (jb/run ps ts)]
     (loop [ts ts]
-      (let [[a ts] (jb/attempt (-> pa (<< ps)) ts)]
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
         (jb/ok nil ts)
+      (let [[_ ts] (jb/run ps ts)]
       (recur ts))))))))
 
 (defn sep-end-by*
@@ -359,11 +382,13 @@
       (jb/ok nil ts)
     (loop [ts ts
            as [a]]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
+        (jb/ok as ts)
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
-        (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/ok as ts))
-      (recur ts (conj as a)))))))))
+        (jb/ok as ts)
+      (recur ts (conj as a)))))))))))
 
 (defn sep-end-by+
   "The parser `(sep-end-by+ p sep)` parses one or more occurrences of `p` separated and
@@ -373,11 +398,13 @@
     (let [[a ts] (jb/run pa ts)]
     (loop [ts ts
            as [a]]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
+        (jb/ok as ts)
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
-        (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/ok as ts))
-      (recur ts (conj as a))))))))
+        (jb/ok as ts)
+      (recur ts (conj as a))))))))))
 
 (defn skip-sep-end-by*
   "The parser `(skip-sep-end-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by* p sep))`."
@@ -387,11 +414,13 @@
     (if (nil? a)
       (jb/ok nil ts)
     (loop [ts ts]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
+        (jb/ok nil ts)
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
-        (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/ok nil ts))
-      (recur ts))))))))
+        (jb/ok nil ts)
+      (recur ts))))))))))
 
 (defn skip-sep-end-by+
   "The parser `(skip-sep-end-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by+ p sep))`."
@@ -399,11 +428,13 @@
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
     (loop [ts ts]
-      (let [[a ts] (jb/attempt (-> ps (>> pa)) ts)]
+      (let [[s ts] (jb/attempt ps ts)]
+      (if (nil? s)
+        (jb/ok nil ts)
+      (let [[a ts] (jb/attempt pa ts)]
       (if (nil? a)
-        (let [[_ ts] (jb/attempt ps ts)] ;; optionally ended by sep
-        (jb/ok nil ts))
-      (recur ts)))))))
+        (jb/ok nil ts)
+      (recur ts)))))))))
 
 (defn many-till*
   "`(many-till* p end)` applies parser p zero or more times until parser `end` succeeds.
@@ -466,3 +497,4 @@
 (-> (def label <?>) (copy-meta <?>))
 (-> (def map   <$>) (copy-meta <$>))
 (-> (def apply <*>) (copy-meta <*>))
+(-> (def skip optional) (copy-meta optional))

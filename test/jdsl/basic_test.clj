@@ -37,7 +37,7 @@
               (a <- jp/any-char)
               (b <- (jp/char \b))
               jp/skip-any-char
-              (e <- (jb/attempt (jc/$> jp/eof :eof)))
+              (e <- (jc/attempt (jc/$> jp/eof :eof)))
               (if (= e :eof) 
                 (jc/return [a b :eof])
               (jc/return [a b])))]

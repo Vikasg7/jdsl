@@ -7,6 +7,9 @@
   [(when-not (empty? string) (vec string)) 
    #_position= -1])
 
+(def string   first)
+(def position second)
+
 (defn next
   "Returns the next char in the char-stream if available else nil.
    It also returns updated char-stream. It doesn't mutate incoming
