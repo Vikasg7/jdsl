@@ -165,11 +165,10 @@
 
 (defn peek
   "Returns the result of running the parser `p`, doesn't consume input.
-   Returns nil if failed.
-   "
+   Returns nil if failed."
   [p]
   (fn [ts]
-    (let [[a _] (jb/attempt p ts)]
+    (let [[a _] (jb/run (attempt p) ts)]
     (jb/ok a ts))))
 
 (defn between
