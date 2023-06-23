@@ -112,15 +112,16 @@
    ```clojure
    (ns example
     (:require [jdsl.basic       :as jb]
-              [jdsl.char-parser :as jp]))
+              [jdsl.char-parser :as jp]
+              [jdsl.combinator  :as jc]))
    (def parser
     (jb/do
       jp/any-char
       (jp/any-char)
       (jp/char \\a)
-      (a <- (jc/char \\a))
-      (b <- jc/any-char)
-      (_ <- jc/any-char)
+      (a <- (jp/char \\a))
+      (b <- jp/any-char)
+      (_ <- jp/any-char)
       (jc/return [a b])))
    ```  
    generates following code (in order):  
