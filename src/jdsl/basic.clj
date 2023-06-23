@@ -99,13 +99,13 @@
   "Expands (a <- parser) or (parser) bindings in the do macro."
   [form]
   (if-not (list? form)
-    [['_  'ts] (list run form 'ts)]
+    [['_ 'ts] (list run form 'ts)]
   (if (= 1 (count form))
-    [['_  'ts] (list run (first form) 'ts)]
+    [['_ 'ts] (list run (first form) 'ts)]
   (let [[sym op prsr] form]
   (if (= '<- op)  
     [[sym 'ts] (list run prsr 'ts)]
-  [['_  'ts] (list run form 'ts)])))))
+  [['_ 'ts] (list run form 'ts)])))))
 
 (defmacro do
   "Haskel like do macro to abstract away passing around `ts` and calling `run` function.  
