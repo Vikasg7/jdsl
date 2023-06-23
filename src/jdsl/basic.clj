@@ -95,8 +95,9 @@
       (throw e)
     (vector nil ts)))))))
 
-(defn- expand 
-  "Expands (a <- parser) or (parser) bindings in the do macro."
+(defn- expand->bindings 
+  "Expands `parser`, `(parser)`, `(a <- parser)`, `(parser args)` forms 
+   in the do macro to `let` bindings."
   [form]
   (if-not (list? form)
     [['_ 'ts] (list run form 'ts)]
@@ -106,6 +107,16 @@
   (if (= '<- op)  
     [[sym 'ts] (list run prsr 'ts)]
   [['_ 'ts] (list run form 'ts)])))))
+
+(defn- expand->body
+  "Expands the `parser`, `(parser)`, `(parser args)` form 
+   in the do macro to `let` body"
+  [form]
+  (if-not (list? form)
+    (list run form 'ts)
+  (if (= 1 (count form))
+    (list run (first form) 'ts)
+  (list run form 'ts))))
 
 (defmacro do
   "Haskel like do macro to abstract away passing around `ts` and calling `run` function.  
@@ -134,15 +145,15 @@
             [a ts] (jb/run (jp/char \\a) ts)
             [b ts] (jb/run jp/any-char ts)
             [_ ts] (jb/run jb/any-char ts)]
-      (jb/run (jc/return [a b] ts)))))
+      (jb/run (jc/return [a b]) ts))))
     ``` 
    *Note*:  
    - `ts` is the token stream (i.e. char-stream in context of jdsl library)
    - `ts` from the previous `jb/run` call is passed to the next call.
    - `_` means parsed value is ignored."
   [& exprs]
-  (let [bindings (mapcat expand (butlast exprs))
-        ret-form (list run (last exprs) 'ts)]
+  (let [bindings (mapcat expand->bindings (butlast exprs))
+        body     (expand->body (last exprs))]
   `(fn [~'ts]
     (let [~@bindings]
-    (~@ret-form)))))
+    (~@body)))))
