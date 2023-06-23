@@ -14,7 +14,11 @@
   ([expect & error] `(str ~expect ~@error)))
 
 (defmacro ok
-  [val ts] `(vector ~val ~ts))
+  [parsed ts] `(vector ~parsed ~ts))
+
+(def parsed       first)
+(def token-stream second)
+(def ts second) ;; short for token-stream
 
 (def EOS? nil?)
 
@@ -92,14 +96,49 @@
     (vector nil ts)))))))
 
 (defn- expand 
-  "Expands (a <- parser) or (parser) bindings in the do macro"
-  [expr]
-  (let [[sym op prsr] (when (list? expr) expr)]
-  (cond (= op '<-) [[sym 'ts] (list run prsr 'ts)]
-        :else      [['_  'ts] (list run expr 'ts)])))
+  "Expands (a <- parser) or (parser) bindings in the do macro."
+  [form]
+  (if-not (list? form)
+    [['_  'ts] (list run form 'ts)]
+  (if (= 1 (count form))
+    [['_  'ts] (list run (first form) 'ts)]
+  (let [[sym op prsr] form]
+  (if (= '<- op)  
+    [[sym 'ts] (list run prsr 'ts)]
+  [['_  'ts] (list run form 'ts)])))))
 
 (defmacro do
-  "Haskel like do macro to abstract away passing around `ts` and calling `run` function."
+  "Haskel like do macro to abstract away passing around `ts` and calling `run` function.  
+   ```clojure
+   (ns example
+    (:require [jdsl.basic       :as jb]
+              [jdsl.char-parser :as jp]))
+   (def parser
+    (jb/do
+      jp/any-char
+      (jp/any-char)
+      (jp/char \\a)
+      (a <- (jc/char \\a))
+      (b <- jc/any-char)
+      (_ <- jc/any-char)
+      (jc/return [a b])))
+   ```  
+   generates following code (in order):  
+   ```clojure
+   (def parser
+    (fn [ts]
+      (let [[_ ts] (jb/run jp/any-char ts)
+            [_ ts] (jb/run jp/any-char ts) ;; Yes, jp/any-char and (jb/any-char) are same coz they take zero args.
+            [_ ts] (jb/run (jp/char \\a) ts)
+            [a ts] (jb/run (jp/char \\a) ts)
+            [b ts] (jb/run jp/any-char ts)
+            [_ ts] (jb/run jb/any-char ts)]
+      (jb/run (jc/return [a b] ts)))))
+    ``` 
+   *Note*:  
+   - `ts` is the token stream (i.e. char-stream in context of jdsl library)
+   - `ts` from the previous `jb/run` call is passed to the next call.
+   - `_` means parsed value is ignored."
   [& exprs]
   (let [bindings (mapcat expand (butlast exprs))
         ret-form (list run (last exprs) 'ts)]

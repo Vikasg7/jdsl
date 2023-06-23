@@ -37,9 +37,10 @@
               (a <- jp/any-char)
               (b <- (jp/char \b))
               jp/skip-any-char
+              (jp/skip-any-char)
               (e <- (jc/attempt (jc/$> jp/eof :eof)))
               (if (= e :eof) 
                 (jc/return [a b :eof])
               (jc/return [a b])))]
-    (is (= (jb/run p (cs/create "abc")) [[\a \b :eof] [(vec "abc") 2]]))
-    (is (= (jb/run p (cs/create "abcf")) [[\a \b] [(vec "abcf") 2]])))))
+    (is (= (jb/run p (cs/create "abce")) [[\a \b :eof] [(vec "abce") 3]]))
+    (is (= (jb/run p (cs/create "abcef")) [[\a \b] [(vec "abcef") 3]])))))
