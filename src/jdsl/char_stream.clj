@@ -7,7 +7,7 @@
   [(when-not (empty? string) (vec string)) 
    #_position= -1])
 
-(def string   first)
+(def string   (comp (partial apply str) first))
 (def position second)
 
 (defn next
