@@ -46,17 +46,17 @@
     (is (= (jb/run p (cs/create "abcef")) [[\a \b] [(vec "abcef") 3]]))))
   (testing "do"
     (let [p (jb/do
-              (a <- jp/any-char)
+              (_ <- jp/any-char)
               (jp/any-char))]
     (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1]]))))
   (testing "do"
     (let [p (jb/do
-              (a <- jp/any-char)
+              (_ <- jp/any-char)
               jp/any-char)]
     (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1]]))))
   (testing "do"
     (let [p (jb/do
-              (a <- jp/any-char)
+              (_ <- jp/any-char)
               (jp/char \b))]
     (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1]]))))
   (testing "do"
