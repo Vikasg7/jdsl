@@ -7,5 +7,4 @@
   :repl-options {:init-ns jdsl.core}
   :global-vars {*warn-on-reflection* true}
   :main jdsl.core
-  :profiles {:dev {:dependencies [[com.github.clj-kondo/lein-clj-kondo "0.2.5"]]}}
-  :plugins [[com.github.clj-kondo/lein-clj-kondo "0.2.5"]])
+  :profiles {:dev {:dependencies [[com.github.clj-kondo/lein-clj-kondo "0.2.5"]]}})

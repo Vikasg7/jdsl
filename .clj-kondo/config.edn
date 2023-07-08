@@ -1,1 +1,1 @@
-{:hooks {:macroexpand {jdsl.basic/do hooks.basic/do}}}
+{:config-paths ["../resources/clj-kondo.exports/vikasg7/jdsl"]}

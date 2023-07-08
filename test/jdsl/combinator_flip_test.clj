@@ -1,4 +1,5 @@
 (ns jdsl.combinator-flip-test
+  {:clj-kondo/config '{:ignore [:unresolved-symbol]}}
   (:require [clojure.test :refer [deftest testing is]]
             [jdsl.basic :as jb]
             [jdsl.char-stream :as cs]

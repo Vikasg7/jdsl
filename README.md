@@ -37,4 +37,4 @@ TODO
 - [Parsec Documentation](https://hackage.haskell.org/package/parsec-3.1.16.1/docs/)
 
 ### TODO
-- [ ] Add custom .clj-kondo hook for jdsl.basic/do macro
+- [x] Add custom .clj-kondo hook for jdsl.basic/do macro
