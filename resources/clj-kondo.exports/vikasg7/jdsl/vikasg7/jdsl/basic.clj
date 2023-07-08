@@ -1,4 +1,4 @@
-(ns hooks.basic
+(ns vikasg7.jdsl.basic
   (:refer-clojure :exclude [do])
   (:require [jdsl.basic :as-alias jb]))
 
