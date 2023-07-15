@@ -1,4 +1,5 @@
 (ns jdsl.char-parser
+  "`jdsl.char-parser` contains definitons of basic char/string parsers."
   (:refer-clojure :exclude [char newline])
   (:require [jdsl.char-stream :as cs]
             [jdsl.basic :as jb]

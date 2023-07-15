@@ -1,4 +1,6 @@
 (ns jdsl.char-stream
+  "`jdsl.char-stream` contains functions to create char stream and functions to
+   read/peek/match characters in char stream."
   (:refer-clojure :exclude [next peek read]))
 
 (defn create

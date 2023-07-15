@@ -1,4 +1,5 @@
 (ns jdsl.basic
+  "`jdsl.basic` contains parser defintions and functions to run parsers and print errors."
   (:refer-clojure :exclude [do map peek apply])
   (:require [jdsl.char-stream :as cs]))
 

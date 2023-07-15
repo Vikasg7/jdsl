@@ -1,4 +1,6 @@
 (ns jdsl.combinator
+  "`jdsl.combinator` contians parser combinators that accept parsers as arguments and
+   return new parsers."
   (:refer-clojure :exclude [apply map peek])
   (:require [jdsl.basic :as jb]
             [clojure.string :as str]))

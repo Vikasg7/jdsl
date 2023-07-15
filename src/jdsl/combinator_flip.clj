@@ -1,5 +1,5 @@
 (ns jdsl.combinator-flip
-  "This namespace creates and holds version of jdsl.combinator functions (marked <Flipable> in doc-string) 
+  "`jdsl.combinator-flip` namespace creates and holds version of jdsl.combinator functions (marked <Flipable> in doc-string) 
    with parameters in reverse orders. This might come in handy while extending parses with -> and ->> 
    (thread macros). So when you require the jdsl.combinator-flip namespace, you should be able to access functions 
    in jsdl.combinators (marked <Flipable> in doc-string) with their arguments flipped i.e. in reverse order."
