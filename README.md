@@ -8,7 +8,7 @@ A _Parser_ is a function that takes a char stream as an argument, for example st
   (fn [char-stream]
     ;; Do something with the char-stream to parse a value
     (vector value char-stream-state))) ;; updated char-stream as [string position]
-    ;; string is a vector of characters
+                                       ;; string is a vector of characters
 ```
 A _Parser Combinator_, on the other hand, is a higher order function (a function that takes other functions as an argument, for example, `map`, `filter`) that takes A Parser (A function) as an argument and returns another Parser. In that sense, A Parser Combinator is something that operates on Parsers. A few examples of Parser Combinators on this library can be - `choice`, `between`, `optional`, `many*`, `many+` etc. Lets see an example.  
 ```clojure
