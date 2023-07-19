@@ -92,7 +92,7 @@
     (if (not= "ParseError" (ex-message e))
       (throw e)
     (let [cs  (:ts (ex-data e))]
-    (if (not= (cs/position ts) (cs/position cs))
+    (if (not= (cs/pos ts) (cs/pos cs))
       (throw e)
     (vector nil ts)))))))
 
