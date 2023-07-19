@@ -7,7 +7,8 @@
 
 (deftest combinator-test
   (testing "<$>"
-    (is (= (jb/run (jc/<$> str (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]])))
+    (is (= (jb/run (jc/<$> str (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]]))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run (jc/<$> #{\b} (jp/char \a)) (cs/create "abc")))))
   (testing "<$"
     (is (= (jb/run (jc/<$ "a" (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]])))
   (testing "$>"

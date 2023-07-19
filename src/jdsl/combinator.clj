@@ -1,6 +1,6 @@
 (ns jdsl.combinator
   "`jdsl.combinator` contians parser combinators that accept parsers as arguments and
-   return new parsers."
+   return new parsers. Parser combinators *combine/compose* other parsers."
   (:refer-clojure :exclude [apply map peek])
   (:require [jdsl.basic :as jb]
             [clojure.string :as str]))
@@ -13,7 +13,8 @@
   [f p]
   (fn [ts]
     (let [[a ts] (jb/run p ts)]
-    (jb/ok (f a) ts))))
+    (when-let [v (f a)]
+     (jb/ok v ts)))))
 
 (defn <$
   "`(<$) :: a -> p b -> p a`  
