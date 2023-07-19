@@ -27,11 +27,11 @@
                  "   Found: i\r\n")]
     (is (= (str/trim x) (str/trim (with-out-str (jb/print-error e)))))))
   (testing "run"
-    (is (= (jb/run (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0]]))
+    (is (= (jb/run (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0 3]]))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run (jp/char \b) (cs/create "abc")))))
   (testing "attempt"
-    (is (= (jb/attempt (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0]]))
-    (is (= (jb/attempt (jp/char \b) (cs/create "abc")) [nil [(vec "abc") -1]])))
+    (is (= (jb/attempt (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0 3]]))
+    (is (= (jb/attempt (jp/char \b) (cs/create "abc")) [nil [(vec "abc") -1 3]])))
   (testing "do"
     (let [p (jb/do
               (a <- jp/any-char)
@@ -42,24 +42,24 @@
               (if (= e :eof) 
                 (jc/return [a b :eof])
               (jc/return [a b])))]
-    (is (= (jb/run p (cs/create "abce")) [[\a \b :eof] [(vec "abce") 3]]))
-    (is (= (jb/run p (cs/create "abcef")) [[\a \b] [(vec "abcef") 3]]))))
+    (is (= (jb/run p (cs/create "abce")) [[\a \b :eof] [(vec "abce") 3 4]]))
+    (is (= (jb/run p (cs/create "abcef")) [[\a \b] [(vec "abcef") 3 5]]))))
   (testing "do"
     (let [p (jb/do
               (_ <- jp/any-char)
               (jp/any-char))]
-    (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1]]))))
+    (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1 5]]))))
   (testing "do"
     (let [p (jb/do
               (_ <- jp/any-char)
               jp/any-char)]
-    (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1]]))))
+    (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1 5]]))))
   (testing "do"
     (let [p (jb/do
               (_ <- jp/any-char)
               (jp/char \b))]
-    (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1]]))))
+    (is (= (jb/run p (cs/create "abcef")) [\b [(vec "abcef") 1 5]]))))
   (testing "do"
     (let [p (jb/do
               (jp/char \a))]
-    (is (= (jb/run p (cs/create "abcef")) [\a [(vec "abcef") 0]])))))
+    (is (= (jb/run p (cs/create "abcef")) [\a [(vec "abcef") 0 5]])))))

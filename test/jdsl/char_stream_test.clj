@@ -5,14 +5,18 @@
 
 (deftest char-stream-test
   (testing "create"
-    (is (= (cs/create "abc") [(vec "abc") -1]))
-    (is (= (cs/create "") [nil -1]))
-    (is (= (cs/create nil) [nil -1])))
+    (is (= (cs/create "abc") [(vec "abc") -1 3]))
+    (is (= (cs/create "") [nil -1 0]))
+    (is (= (cs/create nil) [nil -1 0])))
+  (testing "buf pos end"
+    (is (= (cs/buf (cs/create "abc")) (vec "abc")))
+    (is (= (cs/pos (cs/create "abc")) -1))
+    (is (= (cs/end (cs/create "abc")) 3)))
   (testing "next"
-    (is (= (cs/next (cs/create "abc")) [\a [(vec "abc") 0]]))
+    (is (= (cs/next (cs/create "abc")) [\a [(vec "abc") 0 3]]))
     (is (= (cs/next (cs/create "")) nil)))
   (testing "eof"
-    (is (= (jb/run cs/state (cs/create "abc"))  [[(vec "abc") -1] [(vec "abc") -1]])))
+    (is (= (jb/run cs/state (cs/create "abc"))  [[(vec "abc") -1 3] [(vec "abc") -1 3]])))
   (testing "peek/1"
     (is (= (cs/peek (cs/create "abc")) \a))
     (is (= (cs/peek (cs/create "")) nil)))
@@ -37,30 +41,37 @@
     (is (= (cs/match-str (cs/create "abc") "c") false))
     (is (= (cs/match-str (cs/create "") "") true)))
   (testing "skip/1"
-    (is (= (cs/skip (cs/create "abc")) [(vec "abc") 0]))
+    (is (= (cs/skip (cs/create "abc")) [(vec "abc") 0 3]))
     (is (= (cs/skip (cs/create "")) nil)))
   (testing "skip/2"
-    (is (= (cs/skip (cs/create "abc") 2) [(vec "abc") 1]))
+    (is (= (cs/skip (cs/create "abc") 2) [(vec "abc") 1 3]))
     (is (= (cs/skip (cs/create "abc") 5) nil))
     (is (= (cs/skip (cs/create "") 1) nil)))
   (testing "skip-newline"
-    (is (= (cs/skip-newline (cs/create "\r\n")) [(vec "\r\n") 1]))
-    (is (= (cs/skip-newline (cs/create "\r")) [(vec "\r") 0]))
-    (is (= (cs/skip-newline (cs/create "\n")) [(vec "\n") 0]))
+    (is (= (cs/skip-newline (cs/create "\r\n")) [(vec "\r\n") 1 2]))
+    (is (= (cs/skip-newline (cs/create "\r")) [(vec "\r") 0 1]))
+    (is (= (cs/skip-newline (cs/create "\n")) [(vec "\n") 0 1]))
     (is (= (cs/skip-newline (cs/create "")) nil)))
   (testing "skip-char"
-    (is (= (cs/skip-char (cs/create "abc") \a) [(vec "abc") 0]))
+    (is (= (cs/skip-char (cs/create "abc") \a) [(vec "abc") 0 3]))
     (is (= (cs/skip-char (cs/create "abc") \b) nil))
     (is (= (cs/skip-char (cs/create "") \a) nil)))
   (testing "read/1"
-    (is (= (cs/read (cs/create "abc")) [\a [(vec "abc") 0]]))
-    (is (= (cs/read (cs/create "\r\n")) [\newline [(vec "\r\n") 1]]))
-    (is (= (cs/read (cs/create "\r")) [\newline [(vec "\r") 0]]))
-    (is (= (cs/read (cs/create "\n")) [\newline [(vec "\n") 0]]))
+    (is (= (cs/read (cs/create "abc")) [\a [(vec "abc") 0 3]]))
+    (is (= (cs/read (cs/create "\r\n")) [\newline [(vec "\r\n") 1 2]]))
+    (is (= (cs/read (cs/create "\r")) [\newline [(vec "\r") 0 1]]))
+    (is (= (cs/read (cs/create "\n")) [\newline [(vec "\n") 0 1]]))
     (is (= (cs/read (cs/create "")) nil)))
   (testing "read/2"
-    (is (= (cs/read (cs/create "abc") \a) [\a [(vec "abc") 0]]))
-    (is (= (cs/read (cs/create "\r\n") \newline) [\newline [(vec "\r\n") 1]]))
-    (is (= (cs/read (cs/create "\r") \newline) [\newline [(vec "\r") 0]]))
-    (is (= (cs/read (cs/create "\n") \return) [\newline [(vec "\n") 0]]))
-    (is (= (cs/read (cs/create "") \a) nil))))
+    (is (= (cs/read (cs/create "abc") 1) [\a [(vec "abc") 0 3]]))
+    (is (= (cs/read (cs/create "abc") 2) [[\a \b] [(vec "abc") 1 3]]))
+    (is (= (cs/read (cs/create "\r\n") 1) [\newline [(vec "\r\n") 1 2]]))
+    (is (= (cs/read (cs/create "\r") 1) [\newline [(vec "\r") 0 1]]))
+    (is (= (cs/read (cs/create "\n") 1) [\newline [(vec "\n") 0 1]]))
+    (is (= (cs/read (cs/create "") 1) nil)))
+  (testing "read-char"
+    (is (= (cs/read-char (cs/create "abc") \a) [\a [(vec "abc") 0 3]]))
+    (is (= (cs/read-char (cs/create "\r\n") \newline) [\newline [(vec "\r\n") 1 2]]))
+    (is (= (cs/read-char (cs/create "\r") \newline) [\newline [(vec "\r") 0 1]]))
+    (is (= (cs/read-char (cs/create "\n") \return) [\newline [(vec "\n") 0 1]]))
+    (is (= (cs/read-char (cs/create "") \a) nil))))
