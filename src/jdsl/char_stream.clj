@@ -6,11 +6,11 @@
 (defn create
   "Creates new char-stream for parsers to work with."
   [string]
-  (let [bug (when-not (empty? string) 
+  (let [buf (when-not (empty? string) 
               (vec string)) 
         pos -1              
         end (count string)]
-  [bug pos end]))
+  [buf pos end]))
 
 (def buf first)
 (def pos second)
