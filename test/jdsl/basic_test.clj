@@ -1,5 +1,6 @@
 (ns jdsl.basic-test
   (:require [clojure.test :refer [deftest testing is]]
+            [jdsl.test-util :refer [is-parse-error?]]
             [jdsl.basic :as jb]
             [jdsl.char-stream :as cs]
             [jdsl.char-parser :as jp]
@@ -28,7 +29,7 @@
     (is (= (str/trim x) (str/trim (with-out-str (jb/print-error e)))))))
   (testing "run"
     (is (= (jb/run (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0 3]]))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ParseError" (jb/run (jp/char \b) (cs/create "abc")))))
+    (is-parse-error? (jb/run (jp/char \b) (cs/create "abc"))))
   (testing "attempt"
     (is (= (jb/attempt (jp/char \a) (cs/create "abc")) [\a [(vec "abc") 0 3]]))
     (is (= (jb/attempt (jp/char \b) (cs/create "abc")) [nil [(vec "abc") -1 3]])))
