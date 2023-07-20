@@ -164,8 +164,18 @@
     (is-parse-error? (jb/run (jp/string "lt") (cs/create "abcd\tf"))))
   (testing "skip-string"
     (is (= (jb/run (jp/skip-string "abcd\t") (cs/create "abcd\tf")) [nil [(vec "abcd\tf") 4 6]]))
-    (is-parse-error? (jb/run (jp/skip-string "lt") (cs/create "abcd\tf")))))
-
-;; fixed error test cases by abstracting out the redundent parts.
-;; Remove all the clj-kondo warnings
-;; write tests for new char-parsers
+    (is-parse-error? (jb/run (jp/skip-string "lt") (cs/create "abcd\tf"))))
+  (testing "read"
+    (is (= (jb/run (jp/read 1) (cs/create "abcd\tf")) [\a [(vec "abcd\tf") 0 6]]))
+    (is (= (jb/run (jp/read 2) (cs/create "abcd\tf")) [[\a \b] [(vec "abcd\tf") 1 6]]))
+    (is (= (jb/run (jp/read 0) (cs/create "abcd\tf")) [nil [(vec "abcd\tf") -1 6]]))
+    (is (= (jb/run (jp/read 8) (cs/create "abcd\tf")) [(vec "abcd\tf") [(vec "abcd\tf") 5 6]])))
+  (testing "read-line"
+    (is (= (jb/run jp/read-line (cs/create "abcd\nf")) ["abcd" [(vec "abcd\nf") 3 6]]))
+    (is (= (jb/run jp/read-line (cs/create "abcd\r\nf")) ["abcd" [(vec "abcd\r\nf") 3 7]]))
+    (is (= (jb/run jp/read-line (cs/create "\nf")) ["" [(vec "\nf") -1 2]]))
+    (is (= (jb/run jp/read-line (cs/create "abcdf")) ["abcdf" [(vec "abcdf") 4 5]])))
+  (testing "word"
+    (is (= (jb/run jp/word (cs/create "abcd f")) ["abcd" [(vec "abcd f") 3 6]]))
+    (is (= (jb/run jp/word (cs/create "\nf")) ["" [(vec "\nf") -1 2]]))
+    (is (= (jb/run jp/word (cs/create "abcdf")) ["abcdf" [(vec "abcdf") 4 5]]))))

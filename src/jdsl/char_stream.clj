@@ -129,15 +129,16 @@
       (if (zero? nn)
         (if (= n 1) 
           [(first acc) cs]
-        [acc cs])
-      (when-let [[c cs] (read cs)]
-        (recur (dec nn) (conj acc c) cs))))))
+        [(not-empty acc) cs])
+      (if-let [[c cs] (read cs)]
+        (recur (dec nn) (conj acc c) cs)
+      [(not-empty acc) cs])))))
 
 (defn read-char
   "Reads the next n chars"
   [cs c]
   (if (or (= c \return) (= c \newline))
-  (when-let [cs (skip-newline cs)]
-    [\newline cs])
+    (when-let [cs (skip-newline cs)]
+      [\newline cs])
   (when (= c (peek cs))
     [c (skip cs 1)])))

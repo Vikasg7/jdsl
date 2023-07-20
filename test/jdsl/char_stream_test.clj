@@ -68,7 +68,7 @@
     (is (= (cs/read (cs/create "\r\n") 1) [\newline [(vec "\r\n") 1 2]]))
     (is (= (cs/read (cs/create "\r") 1) [\newline [(vec "\r") 0 1]]))
     (is (= (cs/read (cs/create "\n") 1) [\newline [(vec "\n") 0 1]]))
-    (is (= (cs/read (cs/create "") 1) nil)))
+    (is (= (cs/read (cs/create "") 1) [nil [nil -1 0]])))
   (testing "read-char"
     (is (= (cs/read-char (cs/create "abc") \a) [\a [(vec "abc") 0 3]]))
     (is (= (cs/read-char (cs/create "\r\n") \newline) [\newline [(vec "\r\n") 1 2]]))

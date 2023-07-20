@@ -1,21 +1,22 @@
 (ns jdsl.char-parser
-  "`jdsl.char-parser` contains definitons of basic char/string parsers."
-  (:refer-clojure :exclude [char newline])
+  "`jdsl.char-parser` contains definitions of basic char/string parsers."
+  (:refer-clojure :exclude [char newline read read-line])
   (:require [jdsl.char-stream :as cs]
-            [jdsl.basic :as jb]
-            [jdsl.combinator :as jc]))
+            [jdsl.basic       :as jb]
+            [jdsl.combinator  :as jc]
+            [jdsl.util        :as util]))
 
 (defn char
   "Parses a char `c`, (\\r\\n, \\r, \\n) to \\newline."
   [c]
   (fn [cs]
-    (cs/read cs c)))
+    (cs/read-char cs c)))
 
 (defn skip-char
   "Skips the char `c`"
   [c]
   (fn [cs]
-    (when-let [[_ cs] (cs/read cs c)]
+    (when-let [[_ cs] (cs/read-char cs c)]
       (jb/ok nil cs))))
 
 (def any-char
@@ -35,18 +36,18 @@
    the predicate function `f` returns true."
   [pred]
   (fn [cs]
-    (when-let [[char ts] (cs/read cs)]
+    (when-let [[char cs] (cs/read cs)]
     (when (pred char)
-      (jb/ok char ts)))))
+      (jb/ok char cs)))))
 
 (defn skip-satisfy
   "`skip-satisfy f` skips any char or newline for which  
    the predicate function `f` returns true."
   [pred]
   (fn [cs]
-    (when-let [[char ts] (cs/read cs)]
+    (when-let [[char cs] (cs/read cs)]
     (when (pred char)
-      (jb/ok nil ts)))))
+      (jb/ok nil cs)))))
 
 (defn any-of
   "Parses any char contained in the specified `string`."
@@ -70,37 +71,31 @@
 
 (def lower
   "Parses a lower case character."
-  (satisfy (fn lower? [c] (<= (int \a) (int c) (int \z)))))
+  (satisfy util/lower?))
 
 (def upper
   "Parses a upper case character."
-  (satisfy (fn upper? [c] (<= (int \A) (int c) (int \Z)))))
+  (satisfy util/upper?))
 
 (def alphabet
   "Parses alphabets. a-z or A-Z"
-  (satisfy (fn upper? [c] (or (<= (int \A) (int c) (int \Z))
-                              (<= (int \a) (int c) (int \z))))))
+  (satisfy util/alphabet?))
 
 (def digit
   "Parses a digit (0-9)."
-  (satisfy (fn digit? [c] (<= (int \0) (int c) (int \9)))))
+  (satisfy util/digit?))
 
 (def alpha-num
   "Parser alpha-numeric character. a-z or A-Z or 0-9"
-  (satisfy (fn upper? [c] (or (<= (int \A) (int c) (int \Z))
-                              (<= (int \a) (int c) (int \z))
-                              (<= (int \0) (int c) (int \9))))))
+  (satisfy util/alpha-num?))
 
 (def hex
   "Parses a hex character."
-  (satisfy (fn hex? [c]
-             (or (<= (int \0) (int c) (int \9))
-                 (<= (int \a) (int c) (int \f))
-                 (<= (int \A) (int c) (int \F))))))
+  (satisfy util/hex?))
 
 (def octal
   "Parses a octal character."
-  (satisfy (fn octal? [c] (<= (int \0) (int c) (int \7)))))
+  (satisfy util/octal?))
 
 (def tab
   "Parses a tab character."
@@ -116,7 +111,7 @@
 
 (def space
   "Parses a whitespace character like \\newline, \\space, \\return, \\tab, \\formfeed"
-  (satisfy (set "\r\n\t \f")))
+  (satisfy util/space?))
 
 (def spaces*
   "Parses zero or more whitespace characters."
@@ -128,7 +123,7 @@
 
 (def skip-space
   "Skips a whitespace character like \\newline, \\space, \\return, \\tab, \\formfeed"
-  (skip-satisfy (set "\r\n\t \f")))
+  (skip-satisfy util/space?))
 
 (def skip-spaces*
   "Skips zero or more whitespace characters."
@@ -152,7 +147,7 @@
            cs  cs]
       (if (empty? str)
         (jb/ok string cs)
-      (when-let [[_ cs] (cs/read cs (first str))]
+      (when-let [[_ cs] (cs/read-char cs (first str))]
         (recur (next str) cs))))))
 
 (defn skip-string
@@ -163,5 +158,31 @@
            cs  cs]
       (if (empty? str)
         (jb/ok nil cs)
-      (when-let [[_ cs] (cs/read cs (first str))]
+      (when-let [[_ cs] (cs/read-char cs (first str))]
         (recur (next str) cs))))))
+
+(defn read
+  "Reads n characters and returns a vec of characters"
+  [n]
+  (fn [cs]
+    (cs/read cs n)))
+
+(def read-line
+  "Reads the whole line. Returns string."
+  (fn [cs]
+    (loop [cs  cs
+          acc []]
+      (let [[c ncs :as p] (cs/read cs)]
+      (if (or (jb/EOS? p) (= c \newline))
+        (-> [(apply str acc) cs])
+      (recur ncs (conj acc c)))))))
+
+(def word
+  "Reads until the next whitespace character and returns string."
+  (fn [cs]
+    (loop [cs  cs
+           acc []]
+      (let [[c ncs] (cs/read cs)]
+      (if (or (jb/EOS? c) (util/space? c))
+        (-> [(apply str acc) cs])
+      (recur ncs (conj acc c)))))))
