@@ -3,8 +3,7 @@
   (:require [jdsl.basic        :as jb]
             [jdsl.combinator   :as jc]
             [jdsl.char-parser  :as jp]
-            [jdsl.char-stream  :as cs]
-            [jdsl.combinator-flip :as jf]))
+            [jdsl.char-stream  :as cs]))
 
 #_{:clj-kondo/ignore [:unused-binding]}
 (defn -main
