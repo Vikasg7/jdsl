@@ -18,6 +18,9 @@
     (is (= (jb/error "Expected: " "char") "Expected: char")))
   (testing "ok"
     (is (= (jb/ok \a [(vec "input") 1]) [\a [(vec "input") 1]])))
+  (testing "parsed and ts"
+    (is (= (jb/ts (jb/run (jp/char \a) (cs/create "abc"))) [(vec "abc") 0 3]))
+    (is (= (jb/parsed (jb/run (jp/char \a) (cs/create "abc"))) \a)))
   (testing "EOS?"
     (is (= (jb/EOS? nil) true))
     (is (= (jb/EOS? \a) false)))

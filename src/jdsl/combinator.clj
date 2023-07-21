@@ -499,4 +499,4 @@
 (-> (def label <?>) (copy-meta <?>))
 (-> (def map   <$>) (copy-meta <$>))
 (-> (def apply <*>) (copy-meta <*>))
-(-> (def skip optional) (copy-meta optional))
+(-> (def skip  optional) (copy-meta optional))

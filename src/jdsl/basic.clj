@@ -19,7 +19,7 @@
 
 (def parsed       first)
 (def token-stream second)
-(def ts second) ;; short for token-stream
+(def ts           token-stream) ;; short for token-stream
 
 (def EOS? nil?)
 

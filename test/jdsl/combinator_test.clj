@@ -10,6 +10,9 @@
   (testing "<$>"
     (is (= (jb/run (jc/<$> str (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]]))
     (is-parse-error? (jb/run (jc/<$> #{\b} (jp/char \a)) (cs/create "abc"))))
+  (testing "map"
+    (is (= (jb/run (jc/map str (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]]))
+    (is-parse-error? (jb/run (jc/map #{\b} (jp/char \a)) (cs/create "abc"))))
   (testing "<$"
     (is (= (jb/run (jc/<$ "a" (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]])))
   (testing "$>"
@@ -28,6 +31,8 @@
     (is (= (jb/run ((jc/lift {:a 1}) :a) (cs/create "abc")) [1 [(vec "abc") -1 3]])))
   (testing ">>="
     (is (= (jb/run (jc/>>= (jp/char \a) (fn [_] (jp/char \b))) (cs/create "abc")) [\b [(vec "abc") 1 3]])))
+  (testing "bind"
+    (is (= (jb/run (jc/bind (jp/char \a) (fn [_] (jp/char \b))) (cs/create "abc")) [\b [(vec "abc") 1 3]])))
   (testing "=<<"
     (is (= (jb/run (jc/=<< (fn [_] (jp/char \b)) (jp/char \a)) (cs/create "abc")) [\b [(vec "abc") 1 3]])))
   (testing ">>"
@@ -36,6 +41,8 @@
     (is (= (jb/run (jc/<< (jp/char \a) (jp/char \b)) (cs/create "abc")) [\a [(vec "abc") 1 3]])))
   (testing "<*>"
     (is (= (jb/run (jc/<*> (jc/return str) (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]])))
+  (testing "apply"
+    (is (= (jb/run (jc/apply (jc/return str) (jp/char \a)) (cs/create "abc")) ["a" [(vec "abc") 0 3]])))
   (testing "<>"
     (is (= (jb/run (jc/<> (jp/char \a) (jp/char \b)) (cs/create "abc")) [[\a \b] [(vec "abc") 1 3]])))
   (testing "<?>"
@@ -45,11 +52,23 @@
       (is (= "ParseError" (ex-message e)))
       (is (= "Expected: a" (:msg (ex-data e))))
       (is (= [(vec "bcd") -1 3] (:ts (ex-data e)))))))
+  (testing "label"
+    (try 
+      (jb/run (jc/label (jp/char \a) "Expected: a") (cs/create "bcd"))
+    (catch clojure.lang.ExceptionInfo e
+      (is (= "ParseError" (ex-message e)))
+      (is (= "Expected: a" (:msg (ex-data e))))
+      (is (= [(vec "bcd") -1 3] (:ts (ex-data e)))))))
   (testing "<|>"
     (is (= (jb/run (jc/<|> (jp/char \a) (jp/char \b)) (cs/create "bac")) [\b [(vec "bac") 0 3]])))
+  (testing "alt"
+    (is (= (jb/run (jc/alt (jp/char \a) (jp/char \b)) (cs/create "bac")) [\b [(vec "bac") 0 3]])))
   (testing "optional"
     (is (= (jb/run (jc/optional (jp/char \a)) (cs/create "bac")) [nil [(vec "bac") -1 3]]))
     (is (= (jb/run (jc/optional (jp/char \a)) (cs/create "abc")) [nil [(vec "abc") 0 3]])))
+  (testing "skip"
+    (is (= (jb/run (jc/skip (jp/char \a)) (cs/create "bac")) [nil [(vec "bac") -1 3]]))
+    (is (= (jb/run (jc/skip (jp/char \a)) (cs/create "abc")) [nil [(vec "abc") 0 3]])))
   (testing "peek"
     (is (= (jb/run (jc/peek (jp/char \a)) (cs/create "bac")) [nil [(vec "bac") -1 3]]))
     (is (= (jb/run (jc/peek (jp/char \a)) (cs/create "abc")) [\a [(vec "abc") -1 3]])))
