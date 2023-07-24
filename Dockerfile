@@ -1,17 +1,18 @@
-FROM babashka/babashka:latest
+FROM clojure:lein-2.9.1-alpine
 
-RUN apt-get update && \
-    apt-get install -y openjdk-8-jdk && \
-    apt-get install -y git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/ && \
-    rm -rf /var/cache/oracle-jdk8-installer;
-    
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-RUN export JAVA_HOME
+RUN apk add --update-cache curl bash git
+
+# install babashka
+RUN curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install \
+    && chmod +x install \
+    && ./install
 
 WORKDIR /app
-COPY bb.edn .
+
+COPY project.clj .
+
 RUN bb prepare
+
 COPY . .
+
 CMD ["bb", "test"]
