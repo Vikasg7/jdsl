@@ -230,7 +230,7 @@
       (jb/ok nil ts)))))
 
 (defn skip-many*
-  "The parser `(skip-many* p)` is an optimized implementation of  `(-> (fn [_]) (<$> many* p))`"
+  "The parser `(skip-many* p)` is an optimized implementation of  `(-> (fn [_]) (<$> (many* p)))`"
   [p]
   (fn [ts]
     (loop [ts ts]
@@ -240,7 +240,7 @@
       (recur ts))))))
 
 (defn skip-many+
-  "The parser `(skip-many+ p)` is an optimized implementation of `(-> (fn [_]) (<$> many+ p))`"
+  "The parser `(skip-many+ p)` is an optimized implementation of `(-> (fn [_]) (<$> (many+ p)))`"
   [p]
   (fn [ts]
     (let [[_ ts] (jb/run p ts)]
@@ -279,7 +279,7 @@
       (recur ts (conj as a)))))))))
 
 (defn skip-sep-by*
-  "The parser `(skip-sep-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-by* p sep))`."
+  "The parser `(skip-sep-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (sep-by* p sep)))`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -293,7 +293,7 @@
       (recur ts)))))))))
 
 (defn skip-sep-by+
-  "The parser `(skip-sep-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-by+ p sep))`."
+  "The parser `(skip-sep-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (sep-by+ p sep)))`."
   [pa ps]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
@@ -337,7 +337,7 @@
       (recur ts (conj as a)))))))))
 
 (defn skip-end-by*
-  "The parser `(skip-end-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by* p sep))`."
+  "The parser `(skip-end-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (sep-end-by* p sep)))`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -352,7 +352,7 @@
       (recur ts))))))))))
 
 (defn skip-end-by+
-  "The parser `(skip-end-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by+ p sep))`."
+  "The parser `(skip-end-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (sep-end-by+ p sep)))`."
   [pa ps]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)
@@ -399,7 +399,7 @@
       (recur ts (conj as a))))))))))
 
 (defn skip-sep-end-by*
-  "The parser `(skip-sep-end-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by* p sep))`."
+  "The parser `(skip-sep-end-by* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (sep-end-by* p sep)))`."
   [pa ps]
   (fn [ts]
     (let [[a ts] (jb/attempt pa ts)]
@@ -415,7 +415,7 @@
       (recur ts))))))))))
 
 (defn skip-sep-end-by+
-  "The parser `(skip-sep-end-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> sep-end-by+ p sep))`."
+  "The parser `(skip-sep-end-by+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (sep-end-by+ p sep)))`."
   [pa ps]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
@@ -456,7 +456,7 @@
       (recur ts (conj as a)))))))))
 
 (defn skip-many-till*
-  "The parser `(skip-many-till* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> many-till* p sep))`."
+  "The parser `(skip-many-till* p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (many-till* p sep)))`."
   [pa pe]
   (fn [ts]
     (loop [ts ts]
@@ -467,7 +467,7 @@
       (recur ts)))))))
 
 (defn skip-many-till+
-  "The parser `(skip-many-till+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> many-till+ p sep))`."
+  "The parser `(skip-many-till+ p sep)` is an optimized implementation of `(-> (fn [_]) (<$> (many-till+ p sep)))`."
   [pa pe]
   (fn [ts]
     (let [[_ ts] (jb/run pa ts)]
